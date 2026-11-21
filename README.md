@@ -2,6 +2,8 @@
 
 A browser-based engineering tool from **Legends Equipment** that calculates the inside volume of cones and hoppers, and the total weight of material when they are full.
 
+**▶ Use it online: https://legendsequip.github.io/VolumeCalcs/**
+
 The whole app is a single self-contained file, `index.html`. Nothing to install and no server needed. Open it in any modern browser, or host it on any web page.
 
 ## Shapes
@@ -27,7 +29,7 @@ The whole app is a single self-contained file, `index.html`. Nothing to install 
 ## Using it
 
 - **Locally:** download `index.html` and double-click it.
-- **Hosted:** turn on GitHub Pages for this repository (Settings → Pages → Deploy from branch `main`, folder `/root`). The calculator will then be available at `https://legendsequip.github.io/VolumeCalcs/`.
+- **Online:** https://legendsequip.github.io/VolumeCalcs/ (published from this repository's `main` branch with GitHub Pages, and updates automatically when `main` changes).
 - **On a website:** upload `index.html` to the site, or embed the hosted page in an `<iframe>`.
 
 > **Saved calculations are stored in each user's own browser.** They are not shared between people or computers. Use **Export** to back them up or share them, and **Import** to load them.
