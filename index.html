@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hopper &amp; Cone Volume Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f4f8; --card:#ffffff; --ink:#0f172a; --muted:#5b6b82; --line:#e3e8ef;
+  --navy:#0b2545; --shape:#2f7bf5; --shape-dk:#1d4fa3; --shape-tint:#eef4ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.45}
+a{color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- Header ---------- */
+header.top{background:radial-gradient(1200px 400px at 80% -40%,#2a5ea8 0%,transparent 60%),linear-gradient(135deg,#0b2545 0%,#13315c 60%,#173f74 100%);color:#fff;padding:34px 0 86px;position:relative;overflow:hidden}
+header.top::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);pointer-events:none}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;opacity:.75}
+header h1{margin:8px 0 6px;font-size:clamp(26px,4vw,40px);font-weight:800;letter-spacing:-.02em}
+header p{margin:0;max-width:640px;opacity:.85;font-size:16px}
+main{margin-top:-58px;position:relative;z-index:1;padding-bottom:48px}
+
+/* ---------- Shape picker ---------- */
+.step-pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(15,23,42,.06);margin-bottom:16px}
+.step-pill b{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.shape-card{--c:#2f7bf5;--t:#eef4ff;position:relative;display:flex;flex-direction:column;background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;box-shadow:0 2px 6px rgba(15,23,42,.04)}
+.shape-card:hover,.shape-card:focus-visible{transform:translateY(-4px);border-color:var(--c);box-shadow:0 18px 40px -12px rgba(15,23,42,.22);outline:none}
+.shape-card .art{background:radial-gradient(circle at 50% 42%,#fff 0%,var(--t) 70%);display:grid;place-items:center;padding:18px 0 6px;border-bottom:1px solid var(--line)}
+.shape-card .art svg{width:200px;height:220px;max-width:100%;transition:transform .25s ease}
+.shape-card:hover .art svg{transform:scale(1.04)}
+.shape-card .meta{padding:14px 18px 18px;display:flex;align-items:center;gap:12px}
+.shape-card .num{flex:none;width:30px;height:30px;border-radius:9px;background:var(--c);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+.shape-card h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.shape-card p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.shape-card .go{margin-left:auto;flex:none;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--t);color:var(--c);font-weight:700;transition:background .18s,color .18s}
+.shape-card:hover .go{background:var(--c);color:#fff}
+
+/* ---------- Calculator ---------- */
+.calc-head{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:12px 18px 12px 12px;box-shadow:0 10px 30px -14px rgba(15,23,42,.25);margin-bottom:20px}
+.calc-head .mini{flex:none;width:76px;height:76px;border-radius:14px;background:radial-gradient(circle at 50% 40%,#fff,var(--shape-tint));display:grid;place-items:center}
+.calc-head .mini svg{width:66px;height:72px}
+.calc-head .eyebrow{color:var(--shape-dk);opacity:1}
+.calc-head h2{margin:2px 0 0;font-size:clamp(18px,2.6vw,24px);letter-spacing:-.01em}
+.back{margin-left:auto;flex:none;text-decoration:none;font-weight:600;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:9px 14px;background:#fff;transition:border-color .15s,background .15s}
+.back:hover{border-color:var(--shape);background:var(--shape-tint)}
+.calc-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:20px;align-items:start}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 6px rgba(15,23,42,.04)}
+.dia-card{padding:18px}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.ctl{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+select,input{font:inherit;color:var(--ink)}
+select{appearance:none;-webkit-appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235b6b82' stroke-width='1.8'/%3E%3C/svg%3E") no-repeat right 12px center;border:1.5px solid var(--line);border-radius:10px;padding:9px 34px 9px 12px;font-size:15px;font-weight:600;text-transform:none;letter-spacing:0;cursor:pointer}
+select:focus,input:focus{outline:none;border-color:var(--shape);box-shadow:0 0 0 3px color-mix(in srgb,var(--shape) 20%,transparent)}
+
+.diagram{position:relative;max-width:640px;margin:8px auto 0}
+.diagram svg{display:block;width:100%;height:auto}
+.fields{position:absolute;inset:0;pointer-events:none}
+.fld{position:absolute;left:calc(var(--x) * 1%);top:calc(var(--y) * 1%);transform:translate(-50%,-50%);width:118px;pointer-events:auto}
+.fld label{position:absolute;left:50%;bottom:calc(100% + 3px);transform:translateX(-50%);white-space:nowrap;font-size:11.5px;font-weight:700;color:var(--shape-dk);background:rgba(255,255,255,.9);padding:1px 6px;border-radius:6px}
+.fld.below label{bottom:auto;top:calc(100% + 3px)}
+.inwrap{position:relative;display:flex;align-items:center;background:#fff;border:2px solid var(--shape);border-radius:9px;box-shadow:0 4px 12px -4px rgba(15,23,42,.25);transition:background .15s}
+.inwrap input{width:100%;min-width:0;border:0;background:transparent;padding:7px 4px 7px 9px;font-size:15px;font-weight:600;border-radius:9px}
+.inwrap input:focus{box-shadow:none}
+.inwrap:focus-within{box-shadow:0 0 0 3px color-mix(in srgb,var(--shape) 25%,transparent)}
+.inwrap .u{flex:none;padding-right:9px;font-size:13px;color:var(--muted);font-weight:600}
+.fld.auto .inwrap{border-style:dashed;background:var(--shape-tint)}
+.fld.auto .inwrap::after{content:"AUTO";position:absolute;top:-9px;right:-8px;font-size:9px;font-weight:800;letter-spacing:.06em;background:var(--shape);color:#fff;padding:2px 5px;border-radius:5px}
+.mtag{display:none}
+
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0;display:flex;gap:8px;align-items:flex-start}
+.hint svg{flex:none;margin-top:2px}
+.err{display:none;margin-top:12px;background:#fff1f1;border:1px solid #fecaca;color:#b42318;border-radius:10px;padding:10px 12px;font-size:14px}
+.err.show{display:block}
+.btn-calc{margin-top:14px;width:100%;border:0;border-radius:12px;padding:15px 18px;font:inherit;font-size:17px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(180deg,var(--shape),var(--shape-dk));box-shadow:0 10px 24px -10px var(--shape);transition:transform .12s,filter .12s}
+.btn-calc:hover{filter:brightness(1.07)}
+.btn-calc:active{transform:translateY(1px)}
+
+/* ---------- Results ---------- */
+.res-card{overflow:hidden;position:sticky;top:16px;transition:opacity .2s}
+.res-sec{padding:20px}
+.res-sec+.res-sec{border-top:1px solid var(--line)}
+.res-title{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.res-title i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--shape-tint);color:var(--shape-dk);font-style:normal;font-size:12px}
+.vol-sec{background:linear-gradient(180deg,var(--shape-tint),#fff)}
+.big{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 4px}
+.big .val{font-size:clamp(30px,4.2vw,42px);font-weight:800;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:var(--ink);line-height:1.1}
+.big select{font-size:16px;padding:8px 32px 8px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.chip b{color:var(--ink);font-weight:600}
+table.bd{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}
+table.bd td{padding:7px 0;border-top:1px dashed var(--line)}
+table.bd td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+table.bd td:first-child{color:var(--muted)}
+.placeholder{color:var(--muted);font-size:14px;margin:8px 0 0}
+.lbl{display:block;font-size:13px;color:var(--muted);margin:12px 0 6px;font-weight:500}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-size:16px;font-weight:600}
+.row select{flex:none}
+.wt-box{margin-top:14px;border-radius:14px;background:var(--navy);color:#fff;padding:14px 16px}
+.wt-box .res-title{color:rgba(255,255,255,.7)}
+.wt-box .val{color:#fff}
+.wt-box select{background-color:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.25);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23ffffff' stroke-width='1.8'/%3E%3C/svg%3E")}
+.wt-box select option{color:var(--ink)}
+.small{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.stale-msg{display:none;background:#fff8e6;border-bottom:1px solid #fde7a8;color:#8a5a00;font-size:13.5px;font-weight:600;padding:10px 20px}
+.res-card.stale .stale-msg{display:block}
+.res-card.stale .vol-sec .val,.res-card.stale table.bd{opacity:.45}
+details.how{margin-top:14px;font-size:13px;color:var(--muted)}
+details.how summary{cursor:pointer;font-weight:600;color:var(--ink)}
+details.how code{background:#f1f5f9;padding:1px 5px;border-radius:5px;font-size:12.5px}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 16px 32px}
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .calc-grid{grid-template-columns:1fr}
+  .res-card{position:static}
+}
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr}
+  .shape-card{flex-direction:row}
+  .shape-card .art{border-bottom:0;border-right:1px solid var(--line);padding:6px}
+  .shape-card .art svg{width:104px;height:114px}
+  .shape-card .meta{flex:1;padding:12px 14px}
+  .shape-card .num{display:none}
+  .calc-head{flex-wrap:wrap}
+  .back{margin-left:0}
+  .fields{position:static;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+  .fld{position:static;transform:none;width:auto}
+  .fld label,.fld.below label{position:static;transform:none;display:block;background:none;padding:0 0 4px;white-space:normal}
+  .mtag{display:block}
+}
+/* ---------- Branding ---------- */
+.brandrow{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.logo-badge{display:inline-flex;background:#fff;border-radius:10px;padding:5px 10px;box-shadow:0 6px 18px rgba(0,0,0,.28);text-decoration:none}
+.logo-badge img{display:block;height:30px;width:auto}
+.brandrow .eyebrow{border-left:1px solid rgba(255,255,255,.3);padding-left:14px}
+footer.site{display:flex;flex-direction:column;align-items:center;gap:6px}
+footer.site img{height:24px;width:auto;opacity:.9}
+
+/* ---------- Buttons / toast ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--shape);background:var(--shape);color:#fff;font:inherit;font-weight:700;font-size:14px;border-radius:10px;padding:10px 14px;cursor:pointer;text-decoration:none;transition:filter .15s,background .15s}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--shape);background:var(--shape-tint);filter:none}
+.btn.dark{background:var(--navy);border-color:var(--navy)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn.danger{background:#fff;color:#b42318;border-color:#f3c4c0}
+.btn.danger:hover{background:#fff1f1;filter:none}
+.actions{display:flex;flex-wrap:wrap;gap:8px;background:#f8fafc}
+.actions .btn{flex:1 1 auto}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:12px;font-weight:600;font-size:14px;box-shadow:0 12px 30px rgba(15,23,42,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Job reference ---------- */
+.job-card{padding:16px 18px;margin-bottom:20px}
+.job-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.rec-status{font-size:12.5px;color:var(--muted);font-weight:600}
+.rec-status.saved{color:#15803d}
+.job-head .btn{margin-left:auto}
+.job-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.job-grid label{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.job-grid .wide{grid-column:1/-1}
+.job-grid input,.job-grid textarea,.txt{border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-size:15px;font-weight:500;font-family:inherit;resize:vertical;width:100%}
+.job-grid .req input{border-color:color-mix(in srgb,var(--shape) 45%,var(--line))}
+
+/* ---------- Saved list ---------- */
+.saved-card{margin-top:28px;padding:20px}
+.saved-head{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between;margin-bottom:14px}
+.saved-head h2{margin:0;font-size:20px;letter-spacing:-.01em}
+.saved-head p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.saved-tools{display:flex;gap:8px;flex-wrap:wrap}
+.saved-tools input{border:1.5px solid var(--line);border-radius:10px;padding:8px 12px;font-size:14px;min-width:220px}
+.srow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.2fr) minmax(0,1.3fr) minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 4px;border-top:1px solid var(--line);font-size:14px}
+.srow.hd{border-top:0;font-size:11.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;padding-top:0}
+.srow .ref{font-weight:700}
+.srow .sub{color:var(--muted);font-size:12.5px}
+.srow .shp{display:flex;align-items:center;gap:8px}
+.srow .dot{flex:none;width:10px;height:10px;border-radius:3px}
+.srow .act{display:flex;gap:6px;justify-content:flex-end}
+.empty{color:var(--muted);font-size:14px;padding:18px 4px;border-top:1px solid var(--line)}
+
+/* ---------- Customer report ---------- */
+.report-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.report-bar .back{margin-left:0}
+.report{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 10px 30px -14px rgba(15,23,42,.25);padding:36px 40px;max-width:900px;margin:0 auto;color:var(--ink)}
+.rp-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:3px solid var(--navy)}
+.rp-head img{height:44px;width:auto}
+.rp-title{text-align:right}
+.rp-title .eyebrow{color:var(--shape-dk);opacity:1}
+.rp-title h1{margin:2px 0 0;font-size:22px;letter-spacing:-.01em}
+.rp-meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 20px;margin:18px 0;padding:14px 16px;background:#f8fafc;border:1px solid var(--line);border-radius:12px}
+.rp-meta div{font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.rp-meta span{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.rp-main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+.rp-diagram{border:1px solid var(--line);border-radius:12px;padding:6px}
+.rp-diagram svg{display:block;width:100%;height:auto}
+.rp-shape{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.rp-shape svg{width:46px;height:50px;flex:none}
+.rp-shape b{font-size:16px}
+.rp-tile{border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--shape-tint);border:1px solid color-mix(in srgb,var(--shape) 25%,#fff)}
+.rp-tile.dark{background:var(--navy);color:#fff;border-color:var(--navy)}
+.rp-tile span{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.75}
+.rp-tile b{display:block;font-size:26px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rp-tile small{font-size:12.5px;opacity:.8}
+.rp-sec{margin-top:20px}
+.rp-sec h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--shape-dk)}
+.rp-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+table.rp{width:100%;border-collapse:collapse;font-size:13.5px}
+table.rp td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+table.rp td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+table.rp td:first-child{color:var(--muted);padding-right:10px}
+.rp-notes{white-space:pre-wrap;font-size:14px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.rp-foot{display:flex;align-items:center;gap:12px;margin-top:24px;padding-top:12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
+.rp-foot img{height:22px;width:auto}
+.report .mtag{display:none !important}
+
+@media (max-width:980px){ .job-grid{grid-template-columns:repeat(2,minmax(0,1fr))} .srow{grid-template-columns:1fr 1fr} .srow.hd{display:none} .srow .act{grid-column:1/-1;justify-content:flex-start} }
+@media (max-width:640px){
+  .rp-main,.rp-cols{grid-template-columns:1fr} .rp-meta{grid-template-columns:1fr 1fr} .report{padding:20px 16px}
+  .rp-head{flex-direction:column;align-items:flex-start} .rp-title{text-align:left}
+  .saved-tools input{min-width:0;flex:1}
+}
+@media print{
+  @page{size:letter;margin:0.45in}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff}
+  header.top,footer.site,.no-print,#toast{display:none !important}
+  main{margin:0;padding:0}
+  .wrap{max-width:none;padding:0}
+  .report{border:0;box-shadow:none;border-radius:0;padding:0;max-width:none}
+  .rp-main,.rp-cols{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  .rp-meta{grid-template-columns:repeat(3,1fr)}
+  .rp-head{flex-direction:row;align-items:center} .rp-title{text-align:right}
+  .rp-sec,.rp-main{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brandrow"><a class="logo-badge" href="#/" title="Legends Equipment"><img class="lg-logo" alt="Legends Equipment"></a><span class="eyebrow">Engineering Tools</span></div>
+    <h1>Cone &amp; Hopper Volume Calculator</h1>
+    <p>Calculate the inside volume of cones and hoppers, then the total weight of material when full.</p>
+  </div>
+</header>
+<main><div class="wrap" id="app"></div></main>
+<footer class="site">
+  <img class="lg-logo" alt="Legends Equipment">
+  <div>© <span id="yr"></span> Legends Equipment · Engineering Tools</div>
+  <div>Results are theoretical volumes based on the inside dimensions entered, at 100% level fill. Verify critical values with your engineering team.</div>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>const LEGENDS_LOGO = "data:image/jpeg;base64,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b29sAAAAAABFbWxEYm9vbAAAAAAASW50cmJvb2wAAAAAAEJja2dPYmpjAAAAAQAAAAAAAFJHQkMAAAADAAAAAFJkICBkb3ViQG/gAAAAAAAAAAAAR3JuIGRvdWJAb+AAAAAAAAAAAABCbCAgZG91YkBv4AAAAAAAAAAAAEJyZFRVbnRGI1JsdAAAAAAAAAAAAAAAAEJsZCBVbnRGI1JsdAAAAAAAAAAAAAAAAFJzbHRVbnRGI1B4bEBywAAAAAAAAAAACnZlY3RvckRhdGFib29sAQAAAABQZ1BzZW51bQAAAABQZ1BzAAAAAFBnUEMAAAAATGVmdFVudEYjUmx0AAAAAAAAAAAAAAAAVG9wIFVudEYjUmx0AAAAAAAAAAAAAAAAU2NsIFVudEYjUHJjQFkAAAAAAAAAAAAQY3JvcFdoZW5QcmludGluZ2Jvb2wAAAAADmNyb3BSZWN0Qm90dG9tbG9uZwAAAAAAAAAMY3JvcFJlY3RMZWZ0bG9uZwAAAAAAAAANY3JvcFJlY3RSaWdodGxvbmcAAAAAAAAAC2Nyb3BSZWN0VG9wbG9uZwAAAAAAOEJJTQPtAAAAAAAQASwAAAABAAEBLAAAAAEAAThCSU0EJgAAAAAADgAAAAAAAAAAAAA/gAAAOEJJTQPyAAAAAAAKAAD///////8AADhCSU0EDQAAAAAABAAAAB44QklNBBkAAAAAAAQAAAAeOEJJTQPzAAAAAAAJAAAAAAAAAAABADhCSU0nEAAAAAAACgABAAAAAAAAAAE4QklNA/UAAAAAAEgAL2ZmAAEAbGZmAAYAAAAAAAEAL2ZmAAEAoZmaAAYAAAAAAAEAMgAAAAEAWgAAAAYAAAAAAAEANQAAAAEALQAAAAYAAAAAAAE4QklNA/gAAAAAAHAAAP////////////////////////////8D6AAAAAD/////////////////////////////A+gAAAAA/////////////////////////////wPoAAAAAP////////////////////////////8D6AAAOEJJTQQIAAAAAAAQAAAAAQAAAkAAAAJAAAAAADhCSU0ERAAAAAAAEAAAAAIAAAJAAAACQAAAAAA4QklNBEkAAAAAAAQAAAAAOEJJTQQeAAAAAAAEAAAAADhCSU0EGgAAAAADawAAAAYA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+MPs99xrurm2sBtsDPH2izY72Os/0n+j/mq8Q/8Ajaa+p6PpyZ9X1vRna3/S/q+70vT9L+R6fpLqOmfYPsrvsH8x61+76X8761v2yfV9+77X6+9JTbSSSSU//9kAOEJJTQQhAAAAAABXAAAAAQEAAAAPAEEAZABvAGIAZQAgAFAAaABvAHQAbwBzAGgAbwBwAAAAFABBAGQAbwBiAGUAIABQAGgAbwB0AG8AcwBoAG8AcAAgADIAMAAyADYAAAABADhCSU0EBgAAAAAABwAIAQEAAQEA/+EOa2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgMTAuMC1jMDAwIDI1LkcuZDIwZTQ2NiwgMjAyNS8xMi8wOC0yMDo1MDoyMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0RXZ0PSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VFdmVudCMiIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOkRvY3VtZW50SUQ9ImFkb2JlOmRvY2lkOnBob3Rvc2hvcDphOTI4NjA4Mi1kMjAyLTFmNDEtOGYyYy0zYjFkZDhlN2M3NjgiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Zjg1MzBlMjQtOTc5ZS0yOTRiLWFlYmMtOTI0NjE2YTBmNzFjIiB4bXBNTTpPcmlnaW5hbERvY3VtZW50SUQ9IjRFMTQ1MDA4QkEzRTM0RkZGMDMyRDM2OTQ1MzFGM0EyIiBkYzpmb3JtYXQ9ImltYWdlL2pwZWciIHBob3Rvc2hvcDpMZWdhY3lJUFRDRGlnZXN0PSJDRENGRkE3REE4QzdCRTA5MDU3MDc2QUVBRjA1QzM0RSIgcGhvdG9zaG9wOkNvbG9yTW9kZT0iMyIgeG1wOkNyZWF0ZURhdGU9IjIwMjQtMDgtMTlUMTI6NDE6MTItMDQ6MDAiIHhtcDpNZXRhZGF0YURhdGU9IjIwMjYtMDMtMjVUMTQ6MDY6MTItMDQ6MDAiIHhtcDpNb2RpZnlEYXRlPSIyMDI2LTAzLTI1VDE0OjA2OjEyLTA0OjAwIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCAyNS4xMiAoMjAyNDA4MjEubS4yNzQ2IDY2ZmExOTkpICAoV2luZG93cykiPiA8eG1wTU06SGlzdG9yeT4gPHJkZjpTZXE+IDxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDoxZDJmMWRlYi1kZmE3LTZjNDMtYjg0Yi1jZWNlYjk3ZDI3YWYiIHN0RXZ0OndoZW49IjIwMjQtMDgtMjRUMTA6MDA6NTUtMDQ6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCAyNS4xMiAoMjAyNDA4MjEubS4yNzQ2IDY2ZmExOTkpICAoV2luZG93cykiIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4gPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOmY4NTMwZTI0LTk3OWUtMjk0Yi1hZWJjLTkyNDYxNmEwZjcxYyIgc3RFdnQ6d2hlbj0iMjAyNi0wMy0yNVQxNDowNjoxMi0wNDowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIDI3LjYgKDIwMjYwMzIyLm0uMzQ3NSA3ZjE0MzZmKSAgKFdpbmRvd3MpIiBzdEV2dDpjaGFuZ2VkPSIvIi8+IDwvcmRmOlNlcT4gPC94bXBNTTpIaXN0b3J5PiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA8P3hwYWNrZXQgZW5kPSJ3Ij8+/+4AIUFkb2JlAGRAAAAAAQMAEAMCAwYAAAAAAAAAAAAAAAD/2wCEAAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQECAgICAgICAgICAgMDAwMDAwMDAwMBAQEBAQEBAQEBAQICAQICAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDA//CABEIADIA0gMBEQACEQEDEQH/xACcAAABBAIDAQAAAAAAAAAAAAAABwgJCgUGAQMECwEBAAAAAAAAAAAAAAAAAAAAABAAAgICAgIBBAMAAAAAAAAACAkGBwQFAwowAgEAIHAxQBcZEQAABwEAAQMDAgQDBQkAAAABAgMEBQYHCBESEwkAIRQxFTBBIhYgUSNAgTIXGHGRwVIkRScpChIBAAAAAAAAAAAAAAAAAAAAcP/aAAwDAQECEQMRAAAAv8AAFZMrGnlJryQEkmK448UR0SQVMTQ0UdCNfF0F7NXLVgAAAAAfKtI7jYxyJYlJUCDUmxGxCRiIknpCONeJTRQSJ0kwLvQAAAAAV2Cl4JwTmk4hFAZUeKJUbGaOacK8e8auPUGlEohYYAAAAAxJHWU3xxI4IcKNWO4VMTsixHzCOj9CKIwwhg6EYOW4y0CAAAAdJG0V0yF0muFAGrnuFdG/DWDMEtJXZHgjPDcxLCSIvciuAAAAABjxFiAAsDngEsEqHbmRMSb4Yw1Ax5nDaDDivnIAAAAAAAcHIAAAAAAAAAAAf//aAAgB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";</script>
+<script>
+(() => {
+/* ================= Units ================= */
+const LEN = { ft:{f:0.3048,l:'ft',n:'Feet'}, in:{f:0.0254,l:'in',n:'Inches'}, mm:{f:0.001,l:'mm',n:'Millimeters (mm)'}, cm:{f:0.01,l:'cm',n:'Centimeters (cm)'}, m:{f:1,l:'m',n:'Meters (m)'} };
+const VOL = { ft3:{f:35.3146667,l:'ft³'}, in3:{f:61023.7441,l:'in³'}, yd3:{f:1.30795062,l:'yd³'}, m3:{f:1,l:'m³'}, cm3:{f:1e6,l:'cm³'}, L:{f:1000,l:'Liters'}, gal:{f:264.172052,l:'US gal'} };
+const DEN = { lbft3:{f:16.0184634,l:'lb/ft³'}, kgm3:{f:1,l:'kg/m³'}, gcm3:{f:1000,l:'g/cm³'}, lbgal:{f:119.826427,l:'lb/US gal'}, lbin3:{f:27679.9047,l:'lb/in³'} };
+const WT  = { lb:{f:2.20462262,l:'lb'}, kg:{f:1,l:'kg'}, ton:{f:0.00110231131,l:'short tons (US)'}, t:{f:0.001,l:'metric tonnes'} };
+const IMPERIAL = u => u==='ft' || u==='in';
+
+/* ================= Shapes ================= */
+const SHAPES = [
+  {id:'symmetric-cone',          name:'Round Symmetric Cone',                  desc:'Centered outlet · cone only',            kind:'round',  asym:false, wall:false, color:'#2f7bf5'},
+  {id:'symmetric-cone-sidewall', name:'Round Symmetric Cone with Sidewall',    desc:'Cylinder sidewall over a centered cone', kind:'round',  asym:false, wall:true,  color:'#0ea5a0'},
+  {id:'asymmetric-cone',         name:'Round Asymmetric Cone',                 desc:'Offset outlet · one vertical wall',      kind:'round',  asym:true,  wall:false, color:'#7c5cf0'},
+  {id:'asymmetric-cone-sidewall',name:'Round Asymmetric Cone with Sidewall',   desc:'Cylinder sidewall over an offset cone',  kind:'round',  asym:true,  wall:true,  color:'#f08a12'},
+  {id:'square-hopper',           name:'Square Hopper',                         desc:'Square or rectangular pyramid hopper',       kind:'square', asym:false, wall:false, color:'#e5484d'},
+  {id:'square-hopper-sidewall',  name:'Square Hopper with Sidewall',           desc:'Square or rectangular bin over a hopper',      kind:'square', asym:false, wall:true,  color:'#22a559'},
+];
+
+/* ================= Color helpers ================= */
+const hexRGB = h => { h=h.replace('#',''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
+const mix = (a,b,t) => '#'+hexRGB(a).map((v,i)=>Math.round(v+(hexRGB(b)[i]-v)*t).toString(16).padStart(2,'0')).join('');
+const lt = (c,t) => mix(c,'#ffffff',t), dk = (c,t) => mix(c,'#000000',t);
+const cylGrad = (id,c) => `<linearGradient id="${id}" x1="0" x2="1" y1="0" y2="0">
+  <stop offset="0" stop-color="${dk(c,.42)}"/><stop offset=".2" stop-color="${lt(c,.12)}"/><stop offset=".34" stop-color="${lt(c,.45)}"/>
+  <stop offset=".52" stop-color="${c}"/><stop offset=".82" stop-color="${dk(c,.28)}"/><stop offset="1" stop-color="${dk(c,.5)}"/></linearGradient>`;
+const innerGrad = (id,c) => `<linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${dk(c,.78)}"/><stop offset=".7" stop-color="${dk(c,.55)}"/><stop offset="1" stop-color="${dk(c,.4)}"/></linearGradient>`;
+let UID = 0;
+
+/* ================= Picker thumbnails (3D style) ================= */
+function thumb(sh){
+  return sh.kind==='round' ? thumbRound(sh) : thumbSquare(sh);
+}
+function thumbRound(sh){
+  const u='t'+(UID++), c=sh.color, cx=100, R=66, ry=15, r=13, ory=3.6;
+  const yTop = sh.wall ? 34 : 46, yS = sh.wall ? 98 : 46, yB = 168;
+  const ox = sh.asym ? cx+R-r : cx;
+  let s = `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>${cylGrad(u+'g',c)}${cylGrad(u+'s',dk(c,.12))}${innerGrad(u+'i',c)}
+    <filter id="${u}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+    <linearGradient id="${u}h" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`;
+  s += `<ellipse cx="${sh.asym?118:100}" cy="203" rx="64" ry="7" fill="#0f172a" opacity=".22" filter="url(#${u}b)"/>`;
+  // spout + flange
+  s += `<path d="M${ox-r},${yB} L${ox-r},${yB+16} A${r},${ory} 0 0 0 ${ox+r},${yB+16} L${ox+r},${yB} Z" fill="url(#${u}s)"/>`;
+  s += `<path d="M${ox-r-3},${yB+13} L${ox-r-3},${yB+17} A${r+3},${ory+1} 0 0 0 ${ox+r+3},${yB+17} L${ox+r+3},${yB+13} A${r+3},${ory+1} 0 0 1 ${ox-r-3},${yB+13} Z" fill="${dk(c,.35)}"/>`;
+  // cone
+  s += `<path d="M${cx-R},${yS} L${ox-r},${yB} A${r},${ory} 0 0 0 ${ox+r},${yB} L${cx+R},${yS} A${R},${ry} 0 0 1 ${cx-R},${yS} Z" fill="url(#${u}g)"/>`;
+  if (sh.wall){
+    s += `<path d="M${cx-R},${yTop} L${cx-R},${yS} A${R},${ry} 0 0 0 ${cx+R},${yS} L${cx+R},${yTop} Z" fill="url(#${u}g)"/>`;
+    s += `<path d="M${cx-R},${yS} A${R},${ry} 0 0 0 ${cx+R},${yS}" fill="none" stroke="${dk(c,.3)}" stroke-width="1.4" opacity=".7"/>`;
+    s += `<path d="M${cx-R},${yS+2} A${R},${ry} 0 0 0 ${cx+R},${yS+2}" fill="none" stroke="#fff" stroke-width="1" opacity=".35"/>`;
+  }
+  // top opening + rim
+  s += `<ellipse cx="${cx}" cy="${yTop}" rx="${R}" ry="${ry}" fill="url(#${u}i)"/>`;
+  s += `<ellipse cx="${cx}" cy="${yTop+3}" rx="${R-8}" ry="${ry-5}" fill="${dk(c,.25)}" opacity=".35"/>`;
+  s += `<ellipse cx="${cx}" cy="${yTop}" rx="${R}" ry="${ry}" fill="none" stroke="${lt(c,.6)}" stroke-width="2.6"/>`;
+  // gloss streak
+  s += `<path d="M${cx-R+16},${yTop+12} L${cx-R+24},${yTop+12} L${(sh.asym?ox-r:ox-r)+4},${yB-6} L${(sh.asym?ox-r:ox-r)+1},${yB-6} Z" fill="url(#${u}h)" opacity=".55"/>`;
+  return s + '</svg>';
+}
+function thumbSquare(sh){
+  const u='t'+(UID++), c=sh.color;
+  const P = a => a.map(p=>p.join(',')).join(' ');
+  const T = sh.wall ? {L:[24,36],F:[100,62],R:[176,36],B:[100,10]} : {L:[24,50],F:[100,76],R:[176,50],B:[100,24]};
+  const h = sh.wall ? 58 : 0;
+  const M = {L:[24,T.L[1]+h],F:[100,T.F[1]+h],R:[176,T.R[1]+h]};
+  const yo = sh.wall ? 176 : 166;
+  const o = {l:[89,yo],f:[100,yo+4],r:[111,yo]};
+  let s = `<svg viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <linearGradient id="${u}l" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${lt(c,.38)}"/><stop offset="1" stop-color="${c}"/></linearGradient>
+    <linearGradient id="${u}r" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${dk(c,.12)}"/><stop offset="1" stop-color="${dk(c,.42)}"/></linearGradient>
+    <linearGradient id="${u}i" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${dk(c,.75)}"/><stop offset="1" stop-color="${dk(c,.45)}"/></linearGradient>
+    <filter id="${u}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`;
+  s += `<ellipse cx="104" cy="203" rx="64" ry="7" fill="#0f172a" opacity=".22" filter="url(#${u}b)"/>`;
+  // spout
+  s += `<polygon points="${P([o.l,o.f,[100,yo+20],[89,yo+16]])}" fill="${lt(c,.1)}"/><polygon points="${P([o.f,o.r,[111,yo+16],[100,yo+20]])}" fill="${dk(c,.35)}"/>`;
+  // hopper faces
+  s += `<polygon points="${P([M.L,M.F,o.f,o.l])}" fill="url(#${u}l)"/><polygon points="${P([M.F,M.R,o.r,o.f])}" fill="url(#${u}r)"/>`;
+  if (sh.wall){
+    s += `<polygon points="${P([T.L,T.F,M.F,M.L])}" fill="url(#${u}l)"/><polygon points="${P([T.F,T.R,M.R,M.F])}" fill="url(#${u}r)"/>`;
+    s += `<polyline points="${P([M.L,M.F,M.R])}" fill="none" stroke="${dk(c,.35)}" stroke-width="1.3" opacity=".6"/>`;
+  }
+  // top opening
+  s += `<polygon points="${P([T.L,T.B,T.R,T.F])}" fill="url(#${u}i)"/>`;
+  s += `<polygon points="${P([[T.L[0]+14,T.L[1]+1],[T.B[0],T.B[1]+6],[T.R[0]-14,T.R[1]+1],[T.F[0],T.F[1]-4]])}" fill="${dk(c,.2)}" opacity=".3"/>`;
+  s += `<polygon points="${P([T.L,T.B,T.R,T.F])}" fill="none" stroke="${lt(c,.6)}" stroke-width="2.4" stroke-linejoin="round"/>`;
+  // front edge highlight
+  s += `<polyline points="${P([T.F,M.F,o.f])}" fill="none" stroke="#fff" stroke-width="1.3" opacity=".55"/>`;
+  return s + '</svg>';
+}
+
+/* ================= State ================= */
+const state = { unit:'ft', ref:'h', drive:'angle', rect:false, vals:{D:'10', d:'1', A:'60', H:'', S:'8', W:'8', w:'1'},
+  outV:'ft3', denU:'lbft3', wtU:'lb', density:'', res:null, pickedOut:false, pickedDen:false,
+  job:{ref:'', customer:'', company:'', preparedBy:'', notes:'', material:''}, recId:null, keepCalc:false };
+const JOB_FIELDS = [['ref','Reference / Job #','e.g. Q-2026-1142'],['customer','Customer contact',''],['company','Company',''],['preparedBy','Prepared by','']];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+function setLogos(){ document.querySelectorAll('img.lg-logo').forEach(i=>{ if (!i.src) i.src = LEGENDS_LOGO; }); }
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2600); }
+const fmtDate = iso => new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
+
+/* ================= Saved calculations (browser storage + file export/import) ================= */
+const STORE = 'legends-volume-calculator.saved.v1';
+function loadAll(){ try { const a = JSON.parse(localStorage.getItem(STORE)); return Array.isArray(a) ? a : []; } catch(e){ return []; } }
+function saveAll(a){ try { localStorage.setItem(STORE, JSON.stringify(a)); return true; } catch(e){ toast('Could not save — browser storage is unavailable here. Use Export instead.'); return false; } }
+function snapshot(){
+  return { shape:cur.id, rect:state.rect, unit:state.unit, ref:state.ref, drive:state.drive, vals:{...state.vals},
+    outV:state.outV, denU:state.denU, wtU:state.wtU, density:state.density, job:{...state.job} };
+}
+function saveRecord(asNew){
+  const r = computeResult();
+  const summary = r.errs.length ? null : { V:r.V, kg: num(state.density)>=0 ? r.V*num(state.density)*DEN[state.denU].f : null, outV:state.outV, wtU:state.wtU };
+  const all = loadAll(), now = new Date().toISOString();
+  let rec = (!asNew && state.recId) ? all.find(x=>x.id===state.recId) : null;
+  if (rec) Object.assign(rec, snapshot(), {updatedAt:now, summary});
+  else {
+    rec = { id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), createdAt:now, updatedAt:now, ...snapshot(), summary };
+    all.unshift(rec);
+  }
+  if (saveAll(all)){ state.recId = rec.id; updateRecStatus(); toast(`Saved “${rec.job.ref || 'Untitled'}”`); }
+}
+function applyRecord(rec){
+  Object.assign(state, { rect:!!rec.rect, unit:rec.unit, ref:rec.ref, drive:rec.drive, vals:{...state.vals, ...rec.vals},
+    outV:rec.outV, denU:rec.denU, wtU:rec.wtU, density:rec.density ?? '', job:{...state.job, ...rec.job},
+    recId:rec.id, pickedOut:true, pickedDen:true, keepCalc:true });
+  cur = SHAPES.find(s=>s.id===rec.shape);
+}
+function openRecord(id, toReport){
+  const rec = loadAll().find(x=>x.id===id); if (!rec || !SHAPES.find(s=>s.id===rec.shape)) return toast('That saved calculation could not be opened.');
+  applyRecord(rec); curHash = null;
+  go(toReport ? '#/report' : '#/calc/'+rec.shape);
+}
+function updateRecStatus(){
+  const el = document.getElementById('recStatus'); if (!el) return;
+  const rec = state.recId && loadAll().find(x=>x.id===state.recId);
+  el.className = 'rec-status' + (rec ? ' saved' : '');
+  el.textContent = rec ? `✓ Saved ${fmtDate(rec.updatedAt)}` : 'Not saved yet';
+  const sb = document.getElementById('saveBtn'); if (sb) sb.textContent = rec ? 'Save changes' : 'Save calculation';
+  const sn = document.getElementById('saveNewBtn'); if (sn) sn.style.display = rec ? '' : 'none';
+}
+function exportAll(){
+  const data = { app:'legends-volume-calculator', version:1, exported:new Date().toISOString(), records:loadAll() };
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,2)], {type:'application/json'}));
+  a.download = `legends-volume-calculations-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  toast(`Exported ${data.records.length} calculation(s)`);
+}
+function importFile(file){
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result), recs = (Array.isArray(d) ? d : d.records || []).filter(r=>r && r.id && SHAPES.find(s=>s.id===r.shape));
+      const all = loadAll(); let n = 0;
+      recs.forEach(r=>{ const i = all.findIndex(x=>x.id===r.id); if (i>=0) all[i] = r; else all.push(r); n++; });
+      all.sort((a,b)=>String(b.updatedAt).localeCompare(String(a.updatedAt)));
+      if (saveAll(all)){ toast(`Imported ${n} calculation(s)`); renderSaved(); }
+    } catch(e){ toast('That file is not a valid calculator export.'); }
+  };
+  rd.readAsText(file);
+}
+let cur = null;
+const app = document.getElementById('app');
+const num = v => { const n = parseFloat(String(v).replace(/,/g,'')); return Number.isFinite(n) ? n : NaN; };
+const rad = d => d*Math.PI/180, deg = r => r*180/Math.PI;
+const clean = (n,dec) => String(+n.toFixed(dec));
+const runOf = (D,d) => cur.asym ? D-d : (D-d)/2;     // horizontal run of the sloped wall
+function fmt(v){
+  if (!Number.isFinite(v)) return '—';
+  const a = Math.abs(v);
+  const o = a>=1e5 ? {maximumFractionDigits:0} : a>=100 ? {maximumFractionDigits:2} : a>=1 ? {maximumFractionDigits:3} : a===0 ? {} : {maximumSignificantDigits:4};
+  return v.toLocaleString('en-US', o);
+}
+const opts = (obj,sel,lab=x=>x.l) => Object.entries(obj).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${lab(v)}</option>`).join('');
+
+/* ================= Routing ================= */
+let curHash = null;
+function route(h){
+  h = typeof h==='string' ? h : location.hash;
+  if (h === curHash) return;
+  curHash = h;
+  const m = h.match(/^#\/calc\/([\w-]+)/);
+  const sh = m && SHAPES.find(s=>s.id===m[1]);
+  if (/^#\/report/.test(h) && cur) renderReport();
+  else if (sh) renderCalc(sh);
+  else renderHome();
+  setLogos();
+  window.scrollTo({top:0});
+}
+// Navigate without relying on 'hashchange' (works inside embeds / iframes / previews too)
+function go(h){
+  try { if (location.hash !== h) history.pushState(null, '', h); } catch(e){}
+  route(h);
+}
+window.addEventListener('hashchange', ()=>route());
+window.addEventListener('popstate', ()=>route());
+document.addEventListener('click', e=>{
+  const a = e.target.closest('a[href^="#/"]');
+  if (a){ e.preventDefault(); go(a.getAttribute('href')); }
+});
+
+/* ================= Home ================= */
+function renderHome(){
+  cur = null;
+  document.documentElement.style.removeProperty('--shape');
+  app.innerHTML = `<div class="step-pill"><b>1</b>Select a shape</div>
+    <div class="grid">${SHAPES.map((s,i)=>`
+      <button class="shape-card" data-id="${s.id}" style="--c:${s.color};--t:${lt(s.color,.9)}" aria-label="${s.name}">
+        <div class="art">${thumb(s)}</div>
+        <div class="meta"><span class="num">${i+1}</span><div><h3>${s.name}</h3><p>${s.desc}</p></div><span class="go">→</span></div>
+      </button>`).join('')}</div>
+    <section class="card saved-card">
+      <div class="saved-head">
+        <div><h2>Saved Calculations</h2><p>Open, report on or delete a saved job. Saved in this browser — use <b>Export</b> to back up or move to another computer.</p></div>
+        <div class="saved-tools">
+          <input id="savedSearch" type="search" placeholder="Search reference, customer, company…" aria-label="Search saved calculations">
+          <button class="btn ghost" id="exportBtn">⭳ Export</button>
+          <label class="btn ghost" tabindex="0">⭱ Import<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+        </div>
+      </div>
+      <div id="savedList"></div>
+    </section>`;
+  app.querySelectorAll('.shape-card').forEach(b=>b.addEventListener('click',()=>{ state.recId = null; go('#/calc/'+b.dataset.id); }));
+  document.getElementById('savedSearch').addEventListener('input', renderSaved);
+  document.getElementById('exportBtn').addEventListener('click', exportAll);
+  document.getElementById('importFile').addEventListener('change', e=>{ if (e.target.files[0]) importFile(e.target.files[0]); e.target.value=''; });
+  renderSaved();
+}
+
+function renderSaved(){
+  const host = document.getElementById('savedList'); if (!host) return;
+  const q = (document.getElementById('savedSearch').value || '').trim().toLowerCase();
+  const all = loadAll();
+  const list = all.filter(r => !q || [r.job?.ref, r.job?.customer, r.job?.company, r.job?.material, r.job?.preparedBy, SHAPES.find(s=>s.id===r.shape)?.name].join(' ').toLowerCase().includes(q));
+  if (!all.length){ host.innerHTML = `<div class="empty">No saved calculations yet. Pick a shape above, enter the dimensions, then press <b>Save calculation</b>.</div>`; return; }
+  if (!list.length){ host.innerHTML = `<div class="empty">No saved calculations match “${esc(q)}”.</div>`; return; }
+  host.innerHTML = `<div class="srow hd"><div>Reference</div><div>Customer</div><div>Shape</div><div>Result</div><div></div></div>` +
+    list.map(r=>{
+      const sh = SHAPES.find(s=>s.id===r.shape), s = r.summary;
+      const shapeName = r.rect ? sh.name.replace('Square','Rectangular') : sh.name;
+      const res = s ? `${fmt(s.V*VOL[s.outV].f)} ${VOL[s.outV].l}${s.kg!=null ? `<div class="sub">${fmt(s.kg*WT[s.wtU].f)} ${WT[s.wtU].l}</div>` : ''}` : '<span class="sub">Incomplete</span>';
+      return `<div class="srow">
+        <div><div class="ref">${esc(r.job?.ref) || '<span class="sub">Untitled</span>'}</div><div class="sub">${fmtDate(r.updatedAt)}</div></div>
+        <div>${esc(r.job?.customer) || '—'}<div class="sub">${esc(r.job?.company)}</div></div>
+        <div class="shp"><span class="dot" style="background:${sh.color}"></span>${shapeName}</div>
+        <div>${res}</div>
+        <div class="act">
+          <button class="btn sm" data-open="${r.id}" style="--shape:${sh.color}">Open</button>
+          <button class="btn sm ghost" data-report="${r.id}">Report</button>
+          <button class="btn sm danger" data-del="${r.id}" aria-label="Delete">Delete</button>
+        </div></div>`;
+    }).join('');
+  host.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openRecord(b.dataset.open,false)));
+  host.querySelectorAll('[data-report]').forEach(b=>b.addEventListener('click',()=>openRecord(b.dataset.report,true)));
+  host.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{
+    const rec = all.find(x=>x.id===b.dataset.del);
+    if (!confirm(`Delete “${rec.job?.ref || 'Untitled'}”? This cannot be undone.`)) return;
+    if (saveAll(loadAll().filter(x=>x.id!==rec.id))){ if (state.recId===rec.id) state.recId = null; renderSaved(); toast('Deleted'); }
+  }));
+}
+
+/* ================= Calculator ================= */
+function fieldDefs(sh){
+  const r = sh.kind==='round', rect = !r && state.rect;
+  const f = [
+    {k:'D', label: r?'Top Diameter': rect?'Top Length':'Top Width', short: r?'Top Ø': rect?'Top L':'Top W', unit:'len'},
+    {k:'d', label: r?'Outlet Diameter': rect?'Outlet Length':'Outlet Width', short: r?'Outlet Ø': rect?'Outlet L':'Outlet W', unit:'len', below:true},
+    {k:'A', label: r?'Cone Angle': rect?'End Wall Angle':'Hopper Angle', short:'Angle', unit:'deg'},
+    {k:'H', label: r?'Cone Height':'Hopper Height', short: r?'Cone H':'Hopper H', unit:'len'},
+  ];
+  if (sh.wall) f.push({k:'S', label:'Sidewall Height', short:'Sidewall H', unit:'len'});
+  if (rect){
+    f.push({k:'W', label:'Top Width (depth)', short:'Top W', unit:'len'});
+    f.push({k:'w', label:'Outlet Width (depth)', short:'Outlet W', unit:'len', below:true});
+  }
+  return f;
+}
+
+function renderCalc(sh){
+  cur = sh;
+  const root = document.documentElement.style;
+  root.setProperty('--shape', sh.color); root.setProperty('--shape-dk', dk(sh.color,.22)); root.setProperty('--shape-tint', lt(sh.color,.9));
+  state.res = null;
+  const defs = fieldDefs(sh), word = sh.kind==='round' ? 'cone' : 'hopper', rect = sh.kind==='square' && state.rect;
+  app.innerHTML = `
+  <div class="calc-head">
+    <div class="mini">${thumb(sh)}</div>
+    <div><div class="eyebrow">Step 2 · Enter dimensions</div><h2>${rect ? sh.name.replace('Square','Rectangular') : sh.name}</h2></div>
+    <a class="back" href="#/">← Change shape</a>
+  </div>
+  <section class="card job-card">
+    <div class="job-head"><div class="res-title"><i>✎</i>Job Reference</div><span class="rec-status" id="recStatus"></span>
+      <button class="btn sm ghost" id="clearJob" title="Clear the job details and start a new, unsaved calculation">New job</button></div>
+    <div class="job-grid">
+      ${JOB_FIELDS.map(([k,l,ph])=>`<label class="${k==='ref'?'req':''}">${l}<input data-j="${k}" value="${esc(state.job[k])}" placeholder="${ph}" autocomplete="off"></label>`).join('')}
+      <label class="wide">Notes (shown on the customer report)<textarea data-j="notes" rows="2">${esc(state.job.notes)}</textarea></label>
+    </div>
+  </section>
+  <div class="calc-grid">
+    <section class="card dia-card">
+      <div class="toolbar">
+        ${sh.kind==='square' ? `<label class="ctl">Hopper shape<select id="rectSel"><option value="sq"${rect?'':' selected'}>Square</option><option value="rect"${rect?' selected':''}>Rectangular</option></select></label>` : ''}
+        <label class="ctl">Input units<select id="unitSel">${opts(LEN,state.unit,v=>v.n)}</select></label>
+        <label class="ctl">Angle measured from<select id="refSel"><option value="h"${state.ref==='h'?' selected':''}>Horizontal</option><option value="v"${state.ref==='v'?' selected':''}>Vertical</option></select></label>
+      </div>
+      <div class="diagram"><div id="svgHost"></div>
+        <div class="fields">${defs.map(f=>`
+          <div class="fld${f.below?' below':''}" data-k="${f.k}">
+            <label for="f_${f.k}">${f.label}</label>
+            <div class="inwrap"><input id="f_${f.k}" inputmode="decimal" autocomplete="off" value="${state.vals[f.k]}"><span class="u" data-u="${f.unit}">${f.unit==='deg'?'°':LEN[state.unit].l}</span></div>
+          </div>`).join('')}
+        </div>
+      </div>
+      <p class="hint"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.2M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span>Enter <b>either</b> the ${word} angle <b>or</b> the ${word} height — the other is calculated automatically (marked <b>AUTO</b>). Use <b>inside</b> dimensions.${sh.asym?' Asymmetric cone has one vertical wall; the angle is the sloped wall.':''}${rect?' The angle is for the end walls shown in the front view (along the length); the side wall angle is calculated for you. Width is measured front-to-back (into the page).':''}</span></p>
+      <div class="err" id="err"></div>
+      <button class="btn-calc" id="calcBtn">Calculate Volume</button>
+    </section>
+
+    <section class="card res-card" id="results">
+      <div class="stale-msg">Dimensions changed — press <b>Calculate</b> to update.</div>
+      <div class="res-sec vol-sec">
+        <div class="res-title"><i>▣</i>Inside Volume</div>
+        <div class="big"><span class="val" id="volVal">—</span><select id="volUnit" aria-label="Volume output unit">${opts(VOL,state.outV)}</select></div>
+        <div id="volBody"><p class="placeholder">Enter the dimensions and press <b>Calculate Volume</b>.</p></div>
+      </div>
+      <div class="res-sec">
+        <div class="res-title"><i>⚖</i>Material Weight</div>
+        <label class="lbl" for="matName">Material</label>
+        <input class="txt" id="matName" data-j="material" value="${esc(state.job.material)}" placeholder="e.g. Portland cement" autocomplete="off">
+        <label class="lbl" for="den">Material bulk density (weight per unit of volume)</label>
+        <div class="row"><input id="den" inputmode="decimal" placeholder="e.g. 62.4" value="${state.density}"><select id="denUnit" aria-label="Density unit">${opts(DEN,state.denU)}</select></div>
+        <div class="wt-box">
+          <div class="res-title">Total weight when full</div>
+          <div class="big"><span class="val" id="wtVal">—</span><select id="wtUnit" aria-label="Weight output unit">${opts(WT,state.wtU)}</select></div>
+        </div>
+        <p class="small">Total weight = inside volume × bulk density (100% full, level fill).</p>
+        <details class="how"><summary>How it's calculated</summary>
+          <p>${sh.kind==='round'
+            ? `Cone (frustum): <code>V = π·H·(D² + D·d + d²) / 12</code>${sh.wall?'<br>Sidewall (cylinder): <code>V = π·D²·S / 4</code>':''}`
+            : rect
+            ? `Hopper (rectangular frustum): <code>V = H·[L·W + l·w + (L+l)·(W+w)] / 6</code>${sh.wall?'<br>Sidewall (box): <code>V = L·W·S</code>':''}`
+            : `Hopper (pyramid frustum): <code>V = H·(A² + A·a + a²) / 3</code>${sh.wall?'<br>Sidewall (box): <code>V = A²·S</code>':''}`}
+          <br>Height from angle: <code>H = run × tan(angle from horizontal)</code>, where run = ${sh.asym?'(D − d)':'(top − outlet) / 2'}.
+          Outlet spout / discharge piping is not included.</p>
+        </details>
+      </div>
+      <div class="res-sec actions">
+        <button class="btn" id="saveBtn">Save calculation</button>
+        <button class="btn ghost" id="saveNewBtn">Save as new</button>
+        <button class="btn dark" id="reportBtn">Customer report</button>
+      </div>
+    </section>
+  </div>`;
+
+  // --- events ---
+  defs.forEach(f=>{
+    const el = document.getElementById('f_'+f.k);
+    el.addEventListener('input', ()=>{
+      state.vals[f.k] = el.value;
+      if (f.k==='A') state.drive='angle';
+      if (f.k==='H') state.drive='height';
+      sync(); draw(); markStale();
+    });
+    el.addEventListener('keydown', e=>{ if(e.key==='Enter') calculate(); });
+  });
+  const rs = document.getElementById('rectSel');
+  if (rs) rs.addEventListener('change', e=>{ state.rect = e.target.value==='rect'; renderCalc(cur); });
+  document.getElementById('unitSel').addEventListener('change', e=>{
+    state.unit = e.target.value;
+    document.querySelectorAll('.u[data-u="len"]').forEach(s=>s.textContent = LEN[state.unit].l);
+    if (!state.pickedOut){ state.outV = IMPERIAL(state.unit)?'ft3':'m3'; document.getElementById('volUnit').value = state.outV; state.wtU = IMPERIAL(state.unit)?'lb':'kg'; document.getElementById('wtUnit').value = state.wtU; }
+    if (!state.pickedDen){ state.denU = IMPERIAL(state.unit)?'lbft3':'kgm3'; document.getElementById('denUnit').value = state.denU; }
+    draw(); markStale();
+  });
+  document.getElementById('refSel').addEventListener('change', e=>{
+    state.ref = e.target.value;
+    const a = num(state.vals.A);
+    if (a>0 && a<90){ state.vals.A = clean(90-a,2); document.getElementById('f_A').value = state.vals.A; }
+    sync(); draw(); if (state.res) calculate();
+  });
+  document.getElementById('volUnit').addEventListener('change', e=>{ state.outV=e.target.value; state.pickedOut=true; showResults(); });
+  document.getElementById('wtUnit').addEventListener('change', e=>{ state.wtU=e.target.value; state.pickedOut=true; showWeight(); });
+  document.getElementById('denUnit').addEventListener('change', e=>{ state.denU=e.target.value; state.pickedDen=true; showWeight(); });
+  const den = document.getElementById('den');
+  den.addEventListener('input', ()=>{ state.density = den.value; showWeight(); });
+  den.addEventListener('keydown', e=>{ if(e.key==='Enter') calculate(); });
+  document.getElementById('calcBtn').addEventListener('click', ()=>calculate());
+  app.querySelectorAll('[data-j]').forEach(el=>el.addEventListener('input', ()=>{ state.job[el.dataset.j] = el.value; }));
+  document.getElementById('clearJob').addEventListener('click', ()=>{
+    state.job = {ref:'', customer:'', company:'', preparedBy:'', notes:'', material:''}; state.recId = null;
+    app.querySelectorAll('[data-j]').forEach(el=>el.value=''); updateRecStatus(); toast('Started a new job — dimensions kept');
+  });
+  document.getElementById('saveBtn').addEventListener('click', ()=>saveRecord(false));
+  document.getElementById('saveNewBtn').addEventListener('click', ()=>saveRecord(true));
+  document.getElementById('reportBtn').addEventListener('click', ()=>{
+    const r = computeResult();
+    if (r.errs.length){ calculate(); return; }
+    go('#/report');
+  });
+
+  sync(); draw(); updateRecStatus();
+  if (state.keepCalc){ state.keepCalc = false; calculate(true); }
+}
+
+/* Keep angle <-> height linked. The field the user typed last "drives" the other. */
+function sync(){
+  const v = state.vals, D = num(v.D), d = num(v.d), run = runOf(D,d);
+  const ok = D>0 && d>=0 && run>0;
+  if (state.drive==='angle'){
+    const a = num(v.A), th = state.ref==='h' ? a : 90-a;
+    v.H = ok && a>0 && a<90 ? clean(run*Math.tan(rad(th)),4) : '';
+  } else {
+    const H = num(v.H);
+    if (ok && H>0){ const th = deg(Math.atan(H/run)); v.A = clean(state.ref==='h'?th:90-th,2); } else v.A = '';
+  }
+  const k = state.drive==='angle' ? 'H' : 'A';
+  const el = document.getElementById('f_'+k); if (el) el.value = v[k];
+  document.querySelectorAll('.fld').forEach(f=>f.classList.toggle('auto', f.dataset.k===k));
+}
+
+function geom(){
+  const v = state.vals, r = cur.kind==='round';
+  const D = num(v.D), d = num(v.d), S = cur.wall ? num(v.S) : 0;
+  const errs = [];
+  if (!(D>0)) errs.push(`Enter a top ${r?'diameter':'width'} greater than 0.`);
+  if (!(d>=0)) errs.push(`Enter an outlet ${r?'diameter':'width'} (0 or greater).`);
+  if (D>0 && d>=D) errs.push(`The outlet must be smaller than the top ${r?'diameter':'width'}.`);
+  if (cur.wall && !(S>=0)) errs.push('Enter a sidewall height (0 or greater).');
+  const rect = cur.kind==='square' && state.rect;
+  let W = D, w = d;
+  if (rect){
+    W = num(v.W); w = num(v.w);
+    if (!(W>0)) errs.push('Enter a top width (depth) greater than 0.');
+    if (!(w>=0)) errs.push('Enter an outlet width (depth) (0 or greater).');
+    if (W>0 && w>W) errs.push('The outlet width cannot be larger than the top width.');
+  }
+  let H = NaN, th = NaN;
+  const run = runOf(D,d);
+  if (state.drive==='angle'){
+    const a = num(v.A);
+    if (!(a>0 && a<90)) errs.push('The angle must be greater than 0° and less than 90°.');
+    else if (run>0){ th = state.ref==='h' ? a : 90-a; H = run*Math.tan(rad(th)); }
+  } else {
+    H = num(v.H);
+    if (!(H>0)) errs.push('Enter a height greater than 0.');
+    else if (run>0) th = deg(Math.atan(H/run));
+  }
+  return {D,d,S,H,th,run,errs,W,w,rect};
+}
+
+/* ================= Dimensioned diagram ================= */
+function draw(){
+  const g = geom();
+  // fall back to sensible proportions for drawing while inputs are incomplete
+  let D = g.D>0 ? g.D : 10, d = (g.d>=0 && g.d<D) ? g.d : D*0.1;
+  let H = g.H>0 && Number.isFinite(g.H) ? g.H : runOf(D,d)*Math.tan(rad(60));
+  let S = cur.wall ? (g.S>=0 ? g.S : D*0.6) : 0;
+  const W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
+  const w = g.rect ? (g.w>=0 && g.w<=W ? g.w : W*0.1) : d;
+  const {svg,pos} = diagramSVG(cur,{D,d,H,S,W,w,rect:g.rect}, g);
+  document.getElementById('svgHost').innerHTML = svg;
+  document.querySelectorAll('.fld').forEach(f=>{
+    const p = pos[f.dataset.k]; if (!p) return;
+    f.style.setProperty('--x', (p[0]/640*100).toFixed(2));
+    f.style.setProperty('--y', (p[1]/560*100).toFixed(2));
+  });
+}
+
+function diagramSVG(sh, g, exact, labels){
+  const c = sh.color, round = sh.kind==='round', u = 'd'+(UID++);
+  const s = Math.min(270/g.D, 320/(g.H+g.S));
+  const Dw = g.D*s, dw = Math.max(g.d*s, g.d>0?5:0), hc = g.H*s, hs = g.S*s;
+  const cx = 300, y0 = 110 + (320-(hc+hs))/2, yS = y0+hs, yB = yS+hc;
+  const xL = cx-Dw/2, xR = cx+Dw/2;
+  const oL = sh.asym ? xR-dw : cx-dw/2, oR = sh.asym ? xR : cx+dw/2, oc = (oL+oR)/2;
+  const ry = round ? Math.min(13, Dw*0.07) : 0, ory = round ? Math.min(4, dw*0.12) : 0;
+  const dimC = '#64748b';
+  const pos = {};
+  let o = `<svg viewBox="0 0 640 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${sh.name} dimension diagram"><defs>
+    ${round ? cylGrad(u+'g', lt(c,.18)) : `<linearGradient id="${u}g" x1="0" x2="1"><stop offset="0" stop-color="${lt(c,.45)}"/><stop offset=".5" stop-color="${lt(c,.2)}"/><stop offset="1" stop-color="${c}"/></linearGradient>`}
+    ${innerGrad(u+'i',c)}
+    <marker id="${u}a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="${dimC}"/></marker>
+    <pattern id="${u}p" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="#eef2f7" stroke-width="1"/></pattern></defs>
+    <rect width="640" height="560" rx="14" fill="url(#${u}p)"/>`;
+  const stroke = dk(c,.3);
+
+  // ---- body ----
+  if (round){
+    o += `<path d="M${xL},${yS} L${oL},${yB} A${dw/2},${ory} 0 0 0 ${oR},${yB} L${xR},${yS} A${Dw/2},${ry} 0 0 1 ${xL},${yS} Z" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    if (sh.wall) o += `<path d="M${xL},${y0} L${xL},${yS} A${Dw/2},${ry} 0 0 0 ${xR},${yS} L${xR},${y0} Z" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    o += `<ellipse cx="${cx}" cy="${y0}" rx="${Dw/2}" ry="${ry}" fill="url(#${u}i)" stroke="${lt(c,.35)}" stroke-width="2"/>`;
+    if (dw>0) o += `<ellipse cx="${oc}" cy="${yB}" rx="${dw/2}" ry="${ory}" fill="${dk(c,.55)}"/>`;
+  } else {
+    o += `<polygon points="${xL},${yS} ${oL},${yB} ${oR},${yB} ${xR},${yS}" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    if (sh.wall) o += `<rect x="${xL}" y="${y0}" width="${Dw}" height="${hs}" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6"/>`;
+    o += `<line x1="${xL}" y1="${y0}" x2="${xR}" y2="${y0}" stroke="${dk(c,.45)}" stroke-width="3" stroke-linecap="round"/>`;
+    if (dw>0) o += `<line x1="${oL}" y1="${yB}" x2="${oR}" y2="${yB}" stroke="${dk(c,.45)}" stroke-width="3" stroke-linecap="round"/>`;
+  }
+  // centerline
+  if (!sh.asym) o += `<line x1="${cx}" y1="${y0-ry-14}" x2="${cx}" y2="${yB+ory+16}" stroke="${dimC}" stroke-width="1" stroke-dasharray="14 4 3 4" opacity=".55"/>`;
+
+  // ---- helpers ----
+  const hdim = (x1,x2,y,fy1,fy2) => {
+    const dir = y < fy1 ? -1 : 1;
+    return `<line x1="${x1}" y1="${fy1+dir*4}" x2="${x1}" y2="${y+dir*7}" stroke="${dimC}" stroke-width="1"/>
+      <line x1="${x2}" y1="${fy2+dir*4}" x2="${x2}" y2="${y+dir*7}" stroke="${dimC}" stroke-width="1"/>
+      ${x2-x1>3?`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${dimC}" stroke-width="1.2" marker-start="url(#${u}a)" marker-end="url(#${u}a)"/>`:''}`;
+  };
+  const vdim = (x,y1,y2,fx1,fx2) => `<line x1="${fx1+4}" y1="${y1}" x2="${x+7}" y2="${y1}" stroke="${dimC}" stroke-width="1"/>
+      <line x1="${fx2+4}" y1="${y2}" x2="${x+7}" y2="${y2}" stroke="${dimC}" stroke-width="1"/>
+      ${y2-y1>3?`<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${dimC}" stroke-width="1.2" marker-start="url(#${u}a)" marker-end="url(#${u}a)"/>`:''}`;
+  const tag = (x,y,t,anchor='middle') => `<text class="mtag" x="${x}" y="${y}" text-anchor="${anchor}" font-size="22" font-weight="700" fill="${dk(c,.3)}" font-family="Inter,system-ui,sans-serif">${t}</text>`;
+  const defs = fieldDefs(sh), sh_ = k => defs.find(f=>f.k===k).short;
+
+  // top
+  const yTd = y0 - ry - 40;
+  o += hdim(xL,xR,yTd,y0,y0); pos.D = [cx,yTd]; o += tag(cx,yTd-8,sh_('D'));
+  // outlet
+  const yOd = yB + ory + 44;
+  o += hdim(oL,oR,yOd,yB,yB); pos.d = [Math.min(Math.max(oc,80),560),yOd]; o += tag(oc,yOd+20,sh_('d'));
+  // rectangular: width (depth) inputs sit on the left, in line with the matching length inputs
+  if (g.rect){
+    pos.W = [82, yTd]; pos.w = [82, yOd];
+    o += tag(82, yTd+5, 'Top W ⊙') + tag(82, yOd+5, 'Outlet W ⊙');
+  }
+  // heights (right side)
+  const xH = xR + 70;
+  o += vdim(xH, yS, yB, sh.asym?xR:xR, oR);
+  pos.H = [xH,(yS+yB)/2]; o += tag(xH+10,(yS+yB)/2+5,sh_('H'),'start');
+  if (sh.wall){
+    o += vdim(xH, y0, yS, xR, xR);
+    pos.S = [xH,(y0+yS)/2]; o += tag(xH+10,(y0+yS)/2+5,sh_('S'),'start');
+    if (hs < 46 || hc < 46){ // keep the two height inputs from overlapping
+      const mid = (pos.S[1]+pos.H[1])/2;
+      if (pos.H[1]-pos.S[1] < 58){ pos.S[1] = mid-29; pos.H[1] = mid+29; }
+    }
+    // overall height (read-only dimension)
+    const xO = xH + 80, tot = (exact.errs.length? NaN : exact.H + exact.S);
+    o += vdim(xO, y0, yB, xH+56, xH+56);
+    o += `<text x="${xO+16}" y="${(y0+yB)/2}" transform="rotate(-90 ${xO+16} ${(y0+yB)/2})" text-anchor="middle" font-size="13" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">OVERALL ${Number.isFinite(tot)?fmt(tot)+' '+LEN[state.unit].l:''}</text>`;
+  }
+  // angle arc at the outlet corner of the sloped wall
+  const P = [oL,yB], Q = [xL,yS];
+  let w = [Q[0]-P[0], Q[1]-P[1]]; const wl = Math.hypot(...w) || 1; w = [w[0]/wl, w[1]/wl];
+  const rf = state.ref==='h' ? [-1,0] : [0,-1];
+  const R = Math.max(26, Math.min(48, wl*0.55));
+  const cross = rf[0]*w[1] - rf[1]*w[0];
+  const a1 = [P[0]+rf[0]*R, P[1]+rf[1]*R], a2 = [P[0]+w[0]*R, P[1]+w[1]*R];
+  o += `<line x1="${P[0]}" y1="${P[1]}" x2="${P[0]+rf[0]*(R+26)}" y2="${P[1]+rf[1]*(R+26)}" stroke="${dimC}" stroke-width="1" stroke-dasharray="4 3"/>`;
+  o += `<path d="M${a1[0]},${a1[1]} A${R},${R} 0 0 ${cross>0?1:0} ${a2[0]},${a2[1]}" fill="none" stroke="${dk(c,.15)}" stroke-width="2.2"/>`;
+  let b = [rf[0]+w[0], rf[1]+w[1]]; const bl = Math.hypot(...b) || 1; b = [b[0]/bl, b[1]/bl];
+  const dist = R + (state.ref==='h' ? 62 : 40);
+  pos.A = [Math.max(66, P[0]+b[0]*dist), Math.min(500, Math.max(60, P[1]+b[1]*dist))];
+  o += tag(P[0]+b[0]*(R+16), P[1]+b[1]*(R+16)+5, 'θ');
+
+  // plan view inset
+  const ix = 572, iy = 52, ir = 30, ratio = Math.max(0.08, g.d/g.D);
+  o += `<g><rect x="${ix-44}" y="${iy-44}" width="88" height="96" rx="10" fill="#fff" stroke="#e3e8ef"/>
+    <text x="${ix}" y="${iy+46}" text-anchor="middle" font-size="9.5" font-weight="700" letter-spacing="1.2" fill="${dimC}" font-family="Inter,system-ui,sans-serif">PLAN VIEW</text>`;
+  if (round){
+    const orr = ir*ratio, ocx = sh.asym ? ix+ir-orr : ix;
+    o += `<circle cx="${ix}" cy="${iy-4}" r="${ir}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/><circle cx="${ocx}" cy="${iy-4}" r="${orr}" fill="${dk(c,.45)}"/>`;
+  } else {
+    // plan rectangle: length across, width (depth) up/down, scaled to fit the inset
+    const k = ir / Math.max(g.D, g.W), hx = g.D*k, hy = g.W*k;
+    const ox = Math.max(1.5, g.d*k), oy = Math.max(1.5, g.w*k), py = iy-4;
+    const ln = (x1,y1,x2,y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="1" opacity=".6"/>`;
+    o += `<rect x="${ix-hx}" y="${py-hy}" width="${hx*2}" height="${hy*2}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/>
+      ${ln(ix-hx,py-hy,ix-ox,py-oy)}${ln(ix+hx,py-hy,ix+ox,py-oy)}${ln(ix-hx,py+hy,ix-ox,py+oy)}${ln(ix+hx,py+hy,ix+ox,py+oy)}
+      <rect x="${ix-ox}" y="${py-oy}" width="${ox*2}" height="${oy*2}" fill="${dk(c,.45)}"/>`;
+    if (g.rect) o += `<text x="${ix}" y="${py-hy-4}" text-anchor="middle" font-size="9" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">L</text>
+      <text x="${ix-hx-4}" y="${py+3}" text-anchor="end" font-size="9" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">W</text>`;
+  }
+  o += `</g>`;
+  // value callouts (used by the printed report instead of input boxes)
+  if (labels){
+    const defsL = fieldDefs(sh);
+    Object.entries(labels).forEach(([k,t])=>{
+      if (!pos[k]) return;
+      const f = defsL.find(x=>x.k===k), cap = f.label.replace(/ \(depth\)/,''), w = Math.max(t.length*11.5, cap.length*9.2) + 22;
+      const p = [Math.min(Math.max(pos[k][0], w/2+4), 640-w/2-4), pos[k][1]];
+      o += `<g font-family="Inter,system-ui,sans-serif" text-anchor="middle">
+        <rect x="${p[0]-w/2}" y="${p[1]-24}" width="${w}" height="48" rx="8" fill="#fff" stroke="${c}" stroke-width="2"/>
+        <text x="${p[0]}" y="${p[1]-6}" font-size="13" font-weight="700" fill="${dk(c,.25)}">${cap.toUpperCase()}</text>
+        <text x="${p[0]}" y="${p[1]+16}" font-size="19" font-weight="800" fill="#0f172a">${esc(t)}</text></g>`;
+    });
+  }
+  o += `</svg>`;
+  return {svg:o, pos};
+}
+
+/* ================= Calculation & output ================= */
+function markStale(){ if (state.res) document.getElementById('results').classList.add('stale'); }
+
+function computeResult(){
+  const g = geom();
+  if (g.errs.length) return { errs:g.errs, g };
+  const f = LEN[state.unit].f, D = g.D*f, d = g.d*f, H = g.H*f, S = g.S*f, W = g.W*f, w = g.w*f;   // meters
+  // square/rectangular hopper: prismatoid formula (reduces to H(A²+Aa+a²)/3 when square)
+  const Vc = cur.kind==='round' ? Math.PI*H*(D*D + D*d + d*d)/12 : H*(D*W + d*w + (D+d)*(W+w))/6;
+  const Vs = cur.wall ? (cur.kind==='round' ? Math.PI*D*D*S/4 : D*W*S) : 0;
+  return { errs:[], Vc, Vs, V: Vc+Vs, g };
+}
+
+function calculate(silent){
+  const r = computeResult(), err = document.getElementById('err');
+  if (r.errs.length){ err.innerHTML = r.errs.join('<br>'); err.classList.add('show'); return; }
+  err.classList.remove('show');
+  state.res = r;
+  document.getElementById('results').classList.remove('stale');
+  draw(); showResults();
+  if (!silent && window.innerWidth < 980) document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function showResults(){
+  const r = state.res; if (!r) return;
+  const vu = VOL[state.outV];
+  document.getElementById('volVal').textContent = fmt(r.V*vu.f);
+  const chips = Object.entries(VOL).filter(([k])=>k!==state.outV).map(([k,v])=>`<span class="chip"><b>${fmt(r.V*v.f)}</b> ${v.l}</span>`).join('');
+  document.getElementById('volBody').innerHTML = `<div class="chips">${chips}</div>
+    <table class="bd">${resultRows(r).map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table>`;
+  showWeight();
+}
+
+function resultRows(r){
+  const vu = VOL[state.outV], lu = LEN[state.unit].l, g = r.g, word = cur.kind==='round' ? 'Cone' : 'Hopper';
+  const rows = [];
+  if (cur.wall){
+    rows.push([`${word} section volume`, `${fmt(r.Vc*vu.f)} ${vu.l}`]);
+    rows.push([`Sidewall section volume`, `${fmt(r.Vs*vu.f)} ${vu.l}`]);
+  }
+  rows.push([`${word} height`, `${fmt(g.H)} ${lu}`]);
+  if (cur.wall){ rows.push(['Sidewall height', `${fmt(g.S)} ${lu}`]); rows.push(['Overall height', `${fmt(g.H+g.S)} ${lu}`]); }
+  rows.push([`${cur.asym?'Sloped wall': g.rect?'End wall':'Wall'} angle`, `${fmt(g.th)}° from horiz. · ${fmt(90-g.th)}° from vert.`]);
+  if (g.rect){
+    const runW = (g.W-g.w)/2, sw = runW>0 ? deg(Math.atan(g.H/runW)) : 90;
+    rows.push(['Side wall angle', `${fmt(sw)}° from horiz. · ${fmt(90-sw)}° from vert.`]);
+  }
+  if (cur.kind==='round' && !cur.asym) rows.push(['Included cone angle', `${fmt(2*(90-g.th))}°`]);
+  if (cur.asym) rows.push(['Opposite wall', 'Vertical (90°)']);
+  if (cur.kind==='square'){
+    const runL = (g.D-g.d)/2, runW = (g.W-g.w)/2;
+    rows.push(['Valley (corner) angle', `${fmt(deg(Math.atan(g.H/Math.hypot(runL,runW))))}° from horiz.`]);
+  }
+  return rows;
+}
+
+/* ================= Customer report ================= */
+function renderReport(){
+  const r = computeResult();
+  if (r.errs.length){ curHash = null; go('#/calc/'+cur.id); return; }
+  state.keepCalc = true;   // results re-appear when going back to the calculator
+  const sh = cur, g = r.g, lu = LEN[state.unit].l, vu = VOL[state.outV], j = state.job;
+  const rect = sh.kind==='square' && state.rect, shapeName = rect ? sh.name.replace('Square','Rectangular') : sh.name;
+  const root = document.documentElement.style;
+  root.setProperty('--shape', sh.color); root.setProperty('--shape-dk', dk(sh.color,.22)); root.setProperty('--shape-tint', lt(sh.color,.9));
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const den = num(state.density), hasW = den>=0 && state.density!=='';
+  const kg = hasW ? r.V*den*DEN[state.denU].f : NaN;
+  const angRef = state.ref==='h' ? 'from horizontal' : 'from vertical';
+  const autoK = state.drive==='angle' ? 'H' : 'A';
+  // dimension labels drawn onto the diagram
+  const defs = fieldDefs(sh), labels = {};
+  defs.forEach(f=>{ const v = state.vals[f.k]; labels[f.k] = f.unit==='deg' ? `${fmt(num(v))}°` : `${fmt(num(v))} ${lu}`; });
+  const S = sh.wall ? g.S : 0, W = rect ? g.W : g.D, w = rect ? g.w : g.d;
+  const dia = diagramSVG(sh, {D:g.D, d:g.d, H:g.H, S, W, w, rect}, g, labels).svg;
+  const dimRows = defs.map(f=>[f.label + (f.k===autoK ? ' <small>(calculated)</small>' : '') + (f.k==='A' ? ` <small>(${angRef})</small>` : ''), labels[f.k]]);
+  const alt = ['ft3','m3','gal','L'].filter(k=>k!==state.outV).slice(0,3).map(k=>`${fmt(r.V*VOL[k].f)} ${VOL[k].l}`).join(' · ');
+  const altW = hasW ? ['lb','kg','ton','t'].filter(k=>k!==state.wtU).slice(0,2).map(k=>`${fmt(kg*WT[k].f)} ${WT[k].l}`).join(' · ') : '';
+  const meta = [['Reference / Job #', j.ref], ['Date', today], ['Prepared by', j.preparedBy], ['Customer', j.customer], ['Company', j.company], ['Material', j.material]];
+
+  app.innerHTML = `
+  <div class="report-bar no-print">
+    <a class="back" href="#/calc/${sh.id}">← Back to calculator</a>
+    <button class="btn dark" id="printBtn">🖶 Print / Save as PDF</button>
+    ${state.recId ? '' : '<button class="btn ghost" id="rpSave">Save calculation</button>'}
+  </div>
+  <article class="report">
+    <header class="rp-head">
+      <img class="lg-logo" alt="Legends Equipment">
+      <div class="rp-title"><div class="eyebrow">Volume &amp; Weight Report</div><h1>${esc(j.ref) || shapeName}</h1></div>
+    </header>
+    <div class="rp-meta">${meta.map(([k,v])=>`<div><span>${k}</span>${esc(v) || '—'}</div>`).join('')}</div>
+    <div class="rp-main">
+      <div class="rp-diagram">${dia}</div>
+      <div>
+        <div class="rp-shape">${thumb(sh)}<div><span class="sub" style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase">Shape</span><br><b>${shapeName}</b></div></div>
+        <div class="rp-tile"><span>Inside volume (100% full)</span><b>${fmt(r.V*vu.f)} ${vu.l}</b><small>${alt}</small></div>
+        <div class="rp-tile dark"><span>Total material weight</span><b>${hasW ? `${fmt(kg*WT[state.wtU].f)} ${WT[state.wtU].l}` : '—'}</b>
+          <small>${hasW ? `${altW}<br>${esc(j.material) || 'Material'} @ ${fmt(den)} ${DEN[state.denU].l}` : 'No material density entered'}</small></div>
+      </div>
+    </div>
+    <div class="rp-cols rp-sec">
+      <div><h3>Input dimensions (${LEN[state.unit].n})</h3>
+        <table class="rp">${dimRows.map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}</table></div>
+      <div><h3>Calculated results</h3>
+        <table class="rp"><tr><td>Total inside volume</td><td>${fmt(r.V*vu.f)} ${vu.l}</td></tr>
+          ${resultRows(r).map(([a,b])=>`<tr><td>${a}</td><td>${b}</td></tr>`).join('')}
+          ${hasW ? `<tr><td>Material bulk density</td><td>${fmt(den)} ${DEN[state.denU].l}</td></tr><tr><td>Total weight when full</td><td>${fmt(kg*WT[state.wtU].f)} ${WT[state.wtU].l}</td></tr>` : ''}</table></div>
+    </div>
+    ${j.notes ? `<div class="rp-sec"><h3>Notes</h3><div class="rp-notes">${esc(j.notes)}</div></div>` : ''}
+    <footer class="rp-foot"><img class="lg-logo" alt="Legends Equipment">
+      <div>Prepared by <b>Legends Equipment</b>${j.preparedBy ? ' · ' + esc(j.preparedBy) : ''} · ${today}<br>
+      Theoretical inside volume based on the inside dimensions shown, at 100% level fill; outlet spout not included. Weight = volume × bulk density. Verify critical values before use.</div></footer>
+  </article>`;
+  document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+  const rs = document.getElementById('rpSave');
+  if (rs) rs.addEventListener('click', ()=>{ saveRecord(false); rs.remove(); });
+}
+
+function showWeight(){
+  const el = document.getElementById('wtVal'); if (!el) return;
+  const r = state.res, den = num(state.density);
+  if (!r || !(den>=0)){ el.textContent = '—'; return; }
+  const kg = r.V * den * DEN[state.denU].f;
+  el.textContent = fmt(kg * WT[state.wtU].f);
+}
+
+document.getElementById('yr').textContent = new Date().getFullYear();
+route();
+window.__vc = { go };   // handy for testing
+})();
+</script>
+</body>
+</html>

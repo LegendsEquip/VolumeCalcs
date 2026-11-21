@@ -1,0 +1,10 @@
+# CAD models and reference sketches stay private (not part of the web app)
+*.step
+*.stp
+Concept*.jpg
+
+# OS / editor clutter
+Thumbs.db
+desktop.ini
+.DS_Store
+.claude/
