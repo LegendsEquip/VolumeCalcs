@@ -14,6 +14,8 @@ The whole app is a single self-contained file, `index.html`. Nothing to install 
 4. Round Asymmetric Cone with Sidewall
 5. Square / Rectangular Hopper
 6. Square / Rectangular Hopper with Sidewall
+7. Round Cylinder (flat bottom, no cone)
+8. Rectangular Cube / Box (flat bottom, no hopper)
 
 ## Features
 
@@ -24,7 +26,11 @@ The whole app is a single self-contained file, `index.html`. Nothing to install 
 - **Material weight:** enter the bulk density in lb/ft³, kg/m³, g/cm³, lb/US gal or lb/in³ and get the total weight when full in lb, kg, short tons or metric tonnes.
 - **Job reference:** reference / job #, customer, company, prepared by, material and notes.
 - **Customer report:** a branded report with the dimensioned drawing and results. Use **Print / Save as PDF**.
-- **Saved calculations:** save, reopen, search and delete jobs. **Export / Import** moves them between computers as a `.json` file.
+- **Save / Save As:** saves the job as a report file (`.html`) in a folder you choose. The first **Save** asks where to put it, and later **Save**s update that same file. **Save As…** always asks for a new location or name. The file opens in any browser as the customer report, and it carries the inputs inside it.
+  - Choosing a folder works in Chrome and Edge. Other browsers save the file to the Downloads folder.
+- **Open file:** loads a saved report file, or an export, back into the calculator for editing.
+- **Saved Calculations list:** jobs are also listed in the browser, where you can search, open, report on and delete them. **Export all** backs up every job to one `.json` file.
+- **Numbers:** results are shown with at most two decimal places.
 
 ## Using it
 
@@ -32,7 +38,7 @@ The whole app is a single self-contained file, `index.html`. Nothing to install 
 - **Online:** https://legendsequip.github.io/VolumeCalcs/ (published from this repository's `main` branch with GitHub Pages, and updates automatically when `main` changes).
 - **On a website:** upload `index.html` to the site, or embed the hosted page in an `<iframe>`.
 
-> **Saved calculations are stored in each user's own browser.** They are not shared between people or computers. Use **Export** to back them up or share them, and **Import** to load them.
+> **Keep the report files you save to a folder.** The Saved Calculations list only exists in each person's own browser. A report file saved to a shared or network folder can be opened by anyone with **Open file**.
 
 ## Formulas
 
@@ -42,6 +48,8 @@ The whole app is a single self-contained file, `index.html`. Nothing to install 
 | Cylinder sidewall | `V = π·D²·S / 4` |
 | Square / rectangular hopper | `V = H·[L·W + l·w + (L+l)·(W+w)] / 6` |
 | Box sidewall | `V = L·W·S` |
+| Round cylinder (flat bottom) | `V = π·D²·H / 4` |
+| Rectangular cube / box | `V = L·W·H` |
 | Height from angle | `H = run × tan(angle from horizontal)` |
 | Weight | `Weight = Volume × bulk density` |
 

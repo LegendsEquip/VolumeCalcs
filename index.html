@@ -29,7 +29,8 @@ main{margin-top:-58px;position:relative;z-index:1;padding-bottom:48px}
 /* ---------- Shape picker ---------- */
 .step-pill{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px 6px 6px;font-weight:600;font-size:14px;box-shadow:0 4px 14px rgba(15,23,42,.06);margin-bottom:16px}
 .step-pill b{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-size:12px}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media (max-width:1140px){ .grid{grid-template-columns:repeat(3,1fr)} }
 .shape-card{--c:#2f7bf5;--t:#eef4ff;position:relative;display:flex;flex-direction:column;background:var(--card);border:1.5px solid var(--line);border-radius:18px;overflow:hidden;cursor:pointer;text-align:left;padding:0;font:inherit;color:inherit;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;box-shadow:0 2px 6px rgba(15,23,42,.04)}
 .shape-card:hover,.shape-card:focus-visible{transform:translateY(-4px);border-color:var(--c);box-shadow:0 18px 40px -12px rgba(15,23,42,.22);outline:none}
 .shape-card .art{background:radial-gradient(circle at 50% 42%,#fff 0%,var(--t) 70%);display:grid;place-items:center;padding:18px 0 6px;border-bottom:1px solid var(--line)}
@@ -278,7 +279,12 @@ const SHAPES = [
   {id:'asymmetric-cone-sidewall',name:'Round Asymmetric Cone with Sidewall',   desc:'Cylinder sidewall over an offset cone',  kind:'round',  asym:true,  wall:true,  color:'#f08a12'},
   {id:'square-hopper',           name:'Square Hopper',                         desc:'Square or rectangular pyramid hopper',       kind:'square', asym:false, wall:false, color:'#e5484d'},
   {id:'square-hopper-sidewall',  name:'Square Hopper with Sidewall',           desc:'Square or rectangular bin over a hopper',      kind:'square', asym:false, wall:true,  color:'#22a559'},
+  // flat-bottom shapes: no cone / hopper — the "sidewall" height is the whole height
+  {id:'cylinder',                name:'Round Cylinder',                        desc:'Flat bottom · no cone',                  kind:'round',  asym:false, wall:true, flat:true, color:'#d9467a'},
+  {id:'rectangular-box',         name:'Rectangular Cube / Box',                desc:'Flat bottom · no hopper',                kind:'square', asym:false, wall:true, flat:true, color:'#4b6584'},
 ];
+const isRect = sh => sh.kind==='square' && (sh.flat || state.rect);
+const shapeLabel = (sh, rect) => (sh.kind==='square' && !sh.flat && rect) ? sh.name.replace('Square','Rectangular') : sh.name;
 
 /* ================= Color helpers ================= */
 const hexRGB = h => { h=h.replace('#',''); return [0,2,4].map(i=>parseInt(h.substr(i,2),16)); };
@@ -302,6 +308,16 @@ function thumbRound(sh){
     <filter id="${u}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
     <linearGradient id="${u}h" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>`;
   s += `<ellipse cx="${sh.asym?118:100}" cy="203" rx="64" ry="7" fill="#0f172a" opacity=".22" filter="url(#${u}b)"/>`;
+  if (sh.flat){   // plain cylinder, flat bottom
+    const yT = 40, yF = 176;
+    s += `<path d="M${cx-R},${yT} L${cx-R},${yF} A${R},${ry} 0 0 0 ${cx+R},${yF} L${cx+R},${yT} Z" fill="url(#${u}g)"/>`;
+    s += `<path d="M${cx-R},${yF} A${R},${ry} 0 0 0 ${cx+R},${yF}" fill="none" stroke="${dk(c,.35)}" stroke-width="1.4" opacity=".6"/>`;
+    s += `<ellipse cx="${cx}" cy="${yT}" rx="${R}" ry="${ry}" fill="url(#${u}i)"/>`;
+    s += `<ellipse cx="${cx}" cy="${yT+3}" rx="${R-8}" ry="${ry-5}" fill="${dk(c,.25)}" opacity=".35"/>`;
+    s += `<ellipse cx="${cx}" cy="${yT}" rx="${R}" ry="${ry}" fill="none" stroke="${lt(c,.6)}" stroke-width="2.6"/>`;
+    s += `<path d="M${cx-R+16},${yT+14} L${cx-R+24},${yT+14} L${cx-R+24},${yF-4} L${cx-R+16},${yF-4} Z" fill="url(#${u}h)" opacity=".5"/>`;
+    return s + '</svg>';
+  }
   // spout + flange
   s += `<path d="M${ox-r},${yB} L${ox-r},${yB+16} A${r},${ory} 0 0 0 ${ox+r},${yB+16} L${ox+r},${yB} Z" fill="url(#${u}s)"/>`;
   s += `<path d="M${ox-r-3},${yB+13} L${ox-r-3},${yB+17} A${r+3},${ory+1} 0 0 0 ${ox+r+3},${yB+17} L${ox+r+3},${yB+13} A${r+3},${ory+1} 0 0 1 ${ox-r-3},${yB+13} Z" fill="${dk(c,.35)}"/>`;
@@ -334,6 +350,16 @@ function thumbSquare(sh){
     <linearGradient id="${u}i" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${dk(c,.75)}"/><stop offset="1" stop-color="${dk(c,.45)}"/></linearGradient>
     <filter id="${u}b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter></defs>`;
   s += `<ellipse cx="104" cy="203" rx="64" ry="7" fill="#0f172a" opacity=".22" filter="url(#${u}b)"/>`;
+  if (sh.flat){   // plain box, flat bottom
+    const t = {L:[24,46],F:[100,72],R:[176,46],B:[100,20]}, hb = 112;
+    const m = {L:[24,46+hb],F:[100,72+hb],R:[176,46+hb]};
+    s += `<polygon points="${P([t.L,t.F,m.F,m.L])}" fill="url(#${u}l)"/><polygon points="${P([t.F,t.R,m.R,m.F])}" fill="url(#${u}r)"/>`;
+    s += `<polygon points="${P([t.L,t.B,t.R,t.F])}" fill="url(#${u}i)"/>`;
+    s += `<polygon points="${P([[t.L[0]+14,t.L[1]+1],[t.B[0],t.B[1]+6],[t.R[0]-14,t.R[1]+1],[t.F[0],t.F[1]-4]])}" fill="${dk(c,.2)}" opacity=".3"/>`;
+    s += `<polygon points="${P([t.L,t.B,t.R,t.F])}" fill="none" stroke="${lt(c,.6)}" stroke-width="2.4" stroke-linejoin="round"/>`;
+    s += `<polyline points="${P([t.F,m.F])}" fill="none" stroke="#fff" stroke-width="1.3" opacity=".55"/>`;
+    return s + '</svg>';
+  }
   // spout
   s += `<polygon points="${P([o.l,o.f,[100,yo+20],[89,yo+16]])}" fill="${lt(c,.1)}"/><polygon points="${P([o.f,o.r,[111,yo+16],[100,yo+20]])}" fill="${dk(c,.35)}"/>`;
   // hopper faces
@@ -369,7 +395,117 @@ function snapshot(){
   return { shape:cur.id, rect:state.rect, unit:state.unit, ref:state.ref, drive:state.drive, vals:{...state.vals},
     outV:state.outV, denU:state.denU, wtU:state.wtU, density:state.density, job:{...state.job} };
 }
-function saveRecord(asNew){
+/* ---- Save / Save As to a file the user chooses ----
+   The file is a self-contained HTML customer report (opens in any browser, prints to PDF)
+   with the calculation inputs embedded, so "Open file" can load it back into the calculator. */
+const fileHandles = {};   // record id -> file handle chosen this session (so "Save" re-writes the same file)
+const safeName = s => String(s).replace(/[\\/:*?"<>|]+/g,'-').replace(/\s+/g,' ').trim().slice(0,90);
+function reportFileName(){ return safeName(`${state.job.ref || shapeLabel(cur, isRect(cur))} - Volume Report`) + '.html'; }
+function reportFileHTML(rec){
+  const css = document.querySelector('style').textContent;
+  const data = JSON.stringify({app:'legends-volume-calculator', version:1, savedAt:rec.updatedAt, record:rec}).replace(/</g,'\\u003c');
+  const title = esc(`${rec.job.ref || shapeLabel(cur, isRect(cur))} — Legends Equipment Volume Report`);
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>${css}
+:root{--shape:${cur.color};--shape-dk:${dk(cur.color,.22)};--shape-tint:${lt(cur.color,.9)}}
+main{margin:0;padding:24px 0 40px}
+.file-note{font-size:13.5px;color:var(--muted);flex:1;min-width:240px}
+</style></head>
+<body><main><div class="wrap">
+<div class="report-bar no-print"><div class="file-note">Saved Legends Equipment volume report. To change it, open the
+<a href="https://legendsequip.github.io/VolumeCalcs/">Volume Calculator</a> and use <b>Open file</b>.</div>
+<button class="btn dark" onclick="window.print()">🖶 Print / Save as PDF</button></div>
+${reportArticle()}
+</div></main>
+<script type="application/json" id="legends-calc-data">${data}<\/script>
+</body></html>`;
+}
+function downloadFile(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type}));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+async function saveToFile(asNew){
+  if (computeResult().errs.length){
+    if (document.getElementById('calcBtn')) calculate();
+    toast('Fix the dimensions first — the report needs a valid calculation.'); return;
+  }
+  const canPick = 'showSaveFilePicker' in window;
+  let handle = (!asNew && state.recId) ? fileHandles[state.recId] : null;
+  // 1) choose where to save (first save, or Save As) — must happen first, straight from the click
+  if (canPick && !handle){
+    try {
+      handle = await window.showSaveFilePicker({ suggestedName: reportFileName(),
+        types:[{description:'Legends volume report', accept:{'text/html':['.html']}}] });
+    } catch(e){
+      if (e.name === 'AbortError') return;   // user cancelled — nothing saved
+      handle = null;                          // picker blocked (e.g. inside an iframe) → download instead
+    }
+  }
+  // 2) save the inputs in this browser's Saved Calculations list
+  const rec = saveRecord(asNew, true); if (!rec) return;
+  const html = reportFileHTML(rec);
+  // 3) write the report file
+  try {
+    if (handle){
+      if (handle.requestPermission && (await handle.requestPermission({mode:'readwrite'})) !== 'granted') throw new Error('denied');
+      const w = await handle.createWritable(); await w.write(new Blob([html], {type:'text/html'})); await w.close();
+      fileHandles[rec.id] = handle; state.fileName = handle.name;
+      toast(`Saved “${handle.name}”`);
+    } else {
+      downloadFile(reportFileName(), html, 'text/html'); state.fileName = reportFileName();
+      toast(`Saved “${state.fileName}” to your Downloads folder`);
+    }
+  } catch(e){
+    toast('The report file could not be written — the calculation is still saved in this browser.');
+  }
+  updateRecStatus();
+}
+
+/* ---- Open a saved report (.html) or an export (.json) ---- */
+function pickFileViaInput(){
+  return new Promise(res=>{
+    const i = document.createElement('input'); i.type = 'file'; i.accept = '.html,.htm,.json,text/html,application/json';
+    i.onchange = () => res(i.files[0] || null); i.click();
+  });
+}
+async function openFromFile(){
+  let file = null, handle = null;
+  if ('showOpenFilePicker' in window){
+    try {
+      [handle] = await window.showOpenFilePicker({ types:[{description:'Legends volume report or export', accept:{'text/html':['.html','.htm'],'application/json':['.json']}}] });
+      file = await handle.getFile();
+    } catch(e){ if (e.name === 'AbortError') return; handle = null; }
+  }
+  if (!file) file = await pickFileViaInput();
+  if (!file) return;
+  const text = await file.text();
+  let recs = [];
+  try {
+    if (/^\s*[\[{]/.test(text)){ const d = JSON.parse(text); recs = Array.isArray(d) ? d : d.records || (d.record ? [d.record] : []); }
+    else {
+      const el = new DOMParser().parseFromString(text, 'text/html').getElementById('legends-calc-data');
+      if (el){ const d = JSON.parse(el.textContent); if (d.record) recs = [d.record]; }
+    }
+  } catch(e){ recs = []; }
+  recs = recs.filter(r=>r && r.id && SHAPES.find(s=>s.id===r.shape));
+  if (!recs.length){ toast('That file is not a saved Legends volume report or export.'); return; }
+  const all = loadAll();
+  recs.forEach(r=>{ const i = all.findIndex(x=>x.id===r.id); if (i>=0) all[i] = r; else all.unshift(r); });
+  saveAll(all);
+  if (recs.length === 1){
+    if (handle && file.name.toLowerCase().endsWith('.html')){ fileHandles[recs[0].id] = handle; }
+    state.fileName = file.name;
+    toast(`Opened “${file.name}”`);
+    openRecord(recs[0].id, false, true);
+  } else { toast(`Imported ${recs.length} calculation(s)`); renderSaved(); }
+}
+
+function saveRecord(asNew, quiet){
   const r = computeResult();
   const summary = r.errs.length ? null : { V:r.V, kg: num(state.density)>=0 ? r.V*num(state.density)*DEN[state.denU].f : null, outV:state.outV, wtU:state.wtU };
   const all = loadAll(), now = new Date().toISOString();
@@ -379,7 +515,10 @@ function saveRecord(asNew){
     rec = { id:'r'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), createdAt:now, updatedAt:now, ...snapshot(), summary };
     all.unshift(rec);
   }
-  if (saveAll(all)){ state.recId = rec.id; updateRecStatus(); toast(`Saved “${rec.job.ref || 'Untitled'}”`); }
+  if (!saveAll(all)) return quiet ? rec : null;   // storage blocked: still allow the file save
+  state.recId = rec.id; updateRecStatus();
+  if (!quiet) toast(`Saved “${rec.job.ref || 'Untitled'}”`);
+  return rec;
 }
 function applyRecord(rec){
   Object.assign(state, { rect:!!rec.rect, unit:rec.unit, ref:rec.ref, drive:rec.drive, vals:{...state.vals, ...rec.vals},
@@ -387,8 +526,9 @@ function applyRecord(rec){
     recId:rec.id, pickedOut:true, pickedDen:true, keepCalc:true });
   cur = SHAPES.find(s=>s.id===rec.shape);
 }
-function openRecord(id, toReport){
+function openRecord(id, toReport, keepFileName){
   const rec = loadAll().find(x=>x.id===id); if (!rec || !SHAPES.find(s=>s.id===rec.shape)) return toast('That saved calculation could not be opened.');
+  if (!keepFileName) state.fileName = fileHandles[id]?.name || '';
   applyRecord(rec); curHash = null;
   go(toReport ? '#/report' : '#/calc/'+rec.shape);
 }
@@ -396,9 +536,7 @@ function updateRecStatus(){
   const el = document.getElementById('recStatus'); if (!el) return;
   const rec = state.recId && loadAll().find(x=>x.id===state.recId);
   el.className = 'rec-status' + (rec ? ' saved' : '');
-  el.textContent = rec ? `✓ Saved ${fmtDate(rec.updatedAt)}` : 'Not saved yet';
-  const sb = document.getElementById('saveBtn'); if (sb) sb.textContent = rec ? 'Save changes' : 'Save calculation';
-  const sn = document.getElementById('saveNewBtn'); if (sn) sn.style.display = rec ? '' : 'none';
+  el.textContent = rec ? `✓ Saved ${fmtDate(rec.updatedAt)}${state.fileName ? ' · ' + state.fileName : ''}` : 'Not saved yet';
 }
 function exportAll(){
   const data = { app:'legends-volume-calculator', version:1, exported:new Date().toISOString(), records:loadAll() };
@@ -429,9 +567,7 @@ const clean = (n,dec) => String(+n.toFixed(dec));
 const runOf = (D,d) => cur.asym ? D-d : (D-d)/2;     // horizontal run of the sloped wall
 function fmt(v){
   if (!Number.isFinite(v)) return '—';
-  const a = Math.abs(v);
-  const o = a>=1e5 ? {maximumFractionDigits:0} : a>=100 ? {maximumFractionDigits:2} : a>=1 ? {maximumFractionDigits:3} : a===0 ? {} : {maximumSignificantDigits:4};
-  return v.toLocaleString('en-US', o);
+  return v.toLocaleString('en-US', {maximumFractionDigits:2});   // never more than two decimal places
 }
 const opts = (obj,sel,lab=x=>x.l) => Object.entries(obj).map(([k,v])=>`<option value="${k}"${k===sel?' selected':''}>${lab(v)}</option>`).join('');
 
@@ -473,19 +609,19 @@ function renderHome(){
       </button>`).join('')}</div>
     <section class="card saved-card">
       <div class="saved-head">
-        <div><h2>Saved Calculations</h2><p>Open, report on or delete a saved job. Saved in this browser — use <b>Export</b> to back up or move to another computer.</p></div>
+        <div><h2>Saved Calculations</h2><p>Jobs saved in this browser. Use <b>Open file</b> to load a report you saved to a folder (or an export).</p></div>
         <div class="saved-tools">
           <input id="savedSearch" type="search" placeholder="Search reference, customer, company…" aria-label="Search saved calculations">
-          <button class="btn ghost" id="exportBtn">⭳ Export</button>
-          <label class="btn ghost" tabindex="0">⭱ Import<input type="file" id="importFile" accept=".json,application/json" hidden></label>
+          <button class="btn" id="openFileBtn">📂 Open file…</button>
+          <button class="btn ghost" id="exportBtn" title="Download every saved calculation as one backup file">⭳ Export all</button>
         </div>
       </div>
       <div id="savedList"></div>
     </section>`;
-  app.querySelectorAll('.shape-card').forEach(b=>b.addEventListener('click',()=>{ state.recId = null; go('#/calc/'+b.dataset.id); }));
+  app.querySelectorAll('.shape-card').forEach(b=>b.addEventListener('click',()=>{ state.recId = null; state.fileName = ''; go('#/calc/'+b.dataset.id); }));
   document.getElementById('savedSearch').addEventListener('input', renderSaved);
   document.getElementById('exportBtn').addEventListener('click', exportAll);
-  document.getElementById('importFile').addEventListener('change', e=>{ if (e.target.files[0]) importFile(e.target.files[0]); e.target.value=''; });
+  document.getElementById('openFileBtn').addEventListener('click', openFromFile);
   renderSaved();
 }
 
@@ -494,12 +630,12 @@ function renderSaved(){
   const q = (document.getElementById('savedSearch').value || '').trim().toLowerCase();
   const all = loadAll();
   const list = all.filter(r => !q || [r.job?.ref, r.job?.customer, r.job?.company, r.job?.material, r.job?.preparedBy, SHAPES.find(s=>s.id===r.shape)?.name].join(' ').toLowerCase().includes(q));
-  if (!all.length){ host.innerHTML = `<div class="empty">No saved calculations yet. Pick a shape above, enter the dimensions, then press <b>Save calculation</b>.</div>`; return; }
+  if (!all.length){ host.innerHTML = `<div class="empty">No saved calculations yet. Pick a shape above, enter the dimensions, then press <b>💾 Save</b>.</div>`; return; }
   if (!list.length){ host.innerHTML = `<div class="empty">No saved calculations match “${esc(q)}”.</div>`; return; }
   host.innerHTML = `<div class="srow hd"><div>Reference</div><div>Customer</div><div>Shape</div><div>Result</div><div></div></div>` +
     list.map(r=>{
       const sh = SHAPES.find(s=>s.id===r.shape), s = r.summary;
-      const shapeName = r.rect ? sh.name.replace('Square','Rectangular') : sh.name;
+      const shapeName = shapeLabel(sh, r.rect);
       const res = s ? `${fmt(s.V*VOL[s.outV].f)} ${VOL[s.outV].l}${s.kg!=null ? `<div class="sub">${fmt(s.kg*WT[s.wtU].f)} ${WT[s.wtU].l}</div>` : ''}` : '<span class="sub">Incomplete</span>';
       return `<div class="srow">
         <div><div class="ref">${esc(r.job?.ref) || '<span class="sub">Untitled</span>'}</div><div class="sub">${fmtDate(r.updatedAt)}</div></div>
@@ -523,7 +659,12 @@ function renderSaved(){
 
 /* ================= Calculator ================= */
 function fieldDefs(sh){
-  const r = sh.kind==='round', rect = !r && state.rect;
+  const r = sh.kind==='round', rect = isRect(sh);
+  if (sh.flat){
+    const f = [{k:'D', label: r?'Diameter':'Length', short: r?'Ø':'L', unit:'len'}, {k:'S', label:'Height', short:'H', unit:'len'}];
+    if (!r) f.push({k:'W', label:'Width (depth)', short:'W', unit:'len'});
+    return f;
+  }
   const f = [
     {k:'D', label: r?'Top Diameter': rect?'Top Length':'Top Width', short: r?'Top Ø': rect?'Top L':'Top W', unit:'len'},
     {k:'d', label: r?'Outlet Diameter': rect?'Outlet Length':'Outlet Width', short: r?'Outlet Ø': rect?'Outlet L':'Outlet W', unit:'len', below:true},
@@ -543,11 +684,11 @@ function renderCalc(sh){
   const root = document.documentElement.style;
   root.setProperty('--shape', sh.color); root.setProperty('--shape-dk', dk(sh.color,.22)); root.setProperty('--shape-tint', lt(sh.color,.9));
   state.res = null;
-  const defs = fieldDefs(sh), word = sh.kind==='round' ? 'cone' : 'hopper', rect = sh.kind==='square' && state.rect;
+  const defs = fieldDefs(sh), word = sh.kind==='round' ? 'cone' : 'hopper', rect = isRect(sh);
   app.innerHTML = `
   <div class="calc-head">
     <div class="mini">${thumb(sh)}</div>
-    <div><div class="eyebrow">Step 2 · Enter dimensions</div><h2>${rect ? sh.name.replace('Square','Rectangular') : sh.name}</h2></div>
+    <div><div class="eyebrow">Step 2 · Enter dimensions</div><h2>${shapeLabel(sh, rect)}</h2></div>
     <a class="back" href="#/">← Change shape</a>
   </div>
   <section class="card job-card">
@@ -561,9 +702,9 @@ function renderCalc(sh){
   <div class="calc-grid">
     <section class="card dia-card">
       <div class="toolbar">
-        ${sh.kind==='square' ? `<label class="ctl">Hopper shape<select id="rectSel"><option value="sq"${rect?'':' selected'}>Square</option><option value="rect"${rect?' selected':''}>Rectangular</option></select></label>` : ''}
+        ${sh.kind==='square' && !sh.flat ? `<label class="ctl">Hopper shape<select id="rectSel"><option value="sq"${rect?'':' selected'}>Square</option><option value="rect"${rect?' selected':''}>Rectangular</option></select></label>` : ''}
         <label class="ctl">Input units<select id="unitSel">${opts(LEN,state.unit,v=>v.n)}</select></label>
-        <label class="ctl">Angle measured from<select id="refSel"><option value="h"${state.ref==='h'?' selected':''}>Horizontal</option><option value="v"${state.ref==='v'?' selected':''}>Vertical</option></select></label>
+        ${sh.flat ? '' : `<label class="ctl">Angle measured from<select id="refSel"><option value="h"${state.ref==='h'?' selected':''}>Horizontal</option><option value="v"${state.ref==='v'?' selected':''}>Vertical</option></select></label>`}
       </div>
       <div class="diagram"><div id="svgHost"></div>
         <div class="fields">${defs.map(f=>`
@@ -574,7 +715,7 @@ function renderCalc(sh){
         </div>
       </div>
       <p class="hint"><svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7v4.2M8 4.6v.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        <span>Enter <b>either</b> the ${word} angle <b>or</b> the ${word} height — the other is calculated automatically (marked <b>AUTO</b>). Use <b>inside</b> dimensions.${sh.asym?' Asymmetric cone has one vertical wall; the angle is the sloped wall.':''}${rect?' The angle is for the end walls shown in the front view (along the length); the side wall angle is calculated for you. Width is measured front-to-back (into the page).':''}</span></p>
+        <span>${sh.flat ? `Enter the <b>inside</b> ${sh.kind==='round' ? 'diameter' : 'length, width'} and height. Flat bottom — no ${word}.` : `Enter <b>either</b> the ${word} angle <b>or</b> the ${word} height — the other is calculated automatically (marked <b>AUTO</b>). Use <b>inside</b> dimensions.${sh.asym?' Asymmetric cone has one vertical wall; the angle is the sloped wall.':''}${rect?' The angle is for the end walls shown in the front view (along the length); the side wall angle is calculated for you. Width is measured front-to-back (into the page).':''}`}</span></p>
       <div class="err" id="err"></div>
       <button class="btn-calc" id="calcBtn">Calculate Volume</button>
     </section>
@@ -598,18 +739,20 @@ function renderCalc(sh){
         </div>
         <p class="small">Total weight = inside volume × bulk density (100% full, level fill).</p>
         <details class="how"><summary>How it's calculated</summary>
-          <p>${sh.kind==='round'
+          <p>${sh.flat
+            ? (sh.kind==='round' ? 'Cylinder: <code>V = π·D²·H / 4</code>' : 'Box: <code>V = L·W·H</code>')
+            : sh.kind==='round'
             ? `Cone (frustum): <code>V = π·H·(D² + D·d + d²) / 12</code>${sh.wall?'<br>Sidewall (cylinder): <code>V = π·D²·S / 4</code>':''}`
             : rect
             ? `Hopper (rectangular frustum): <code>V = H·[L·W + l·w + (L+l)·(W+w)] / 6</code>${sh.wall?'<br>Sidewall (box): <code>V = L·W·S</code>':''}`
             : `Hopper (pyramid frustum): <code>V = H·(A² + A·a + a²) / 3</code>${sh.wall?'<br>Sidewall (box): <code>V = A²·S</code>':''}`}
-          <br>Height from angle: <code>H = run × tan(angle from horizontal)</code>, where run = ${sh.asym?'(D − d)':'(top − outlet) / 2'}.
-          Outlet spout / discharge piping is not included.</p>
+          ${sh.flat ? '' : `<br>Height from angle: <code>H = run × tan(angle from horizontal)</code>, where run = ${sh.asym?'(D − d)':'(top − outlet) / 2'}.
+          Outlet spout / discharge piping is not included.`}</p>
         </details>
       </div>
       <div class="res-sec actions">
-        <button class="btn" id="saveBtn">Save calculation</button>
-        <button class="btn ghost" id="saveNewBtn">Save as new</button>
+        <button class="btn" id="saveBtn" title="Save the report file (choose a folder the first time) and keep it in Saved Calculations">💾 Save</button>
+        <button class="btn ghost" id="saveNewBtn" title="Save a new copy — choose a folder and file name">Save As…</button>
         <button class="btn dark" id="reportBtn">Customer report</button>
       </div>
     </section>
@@ -635,7 +778,7 @@ function renderCalc(sh){
     if (!state.pickedDen){ state.denU = IMPERIAL(state.unit)?'lbft3':'kgm3'; document.getElementById('denUnit').value = state.denU; }
     draw(); markStale();
   });
-  document.getElementById('refSel').addEventListener('change', e=>{
+  document.getElementById('refSel')?.addEventListener('change', e=>{
     state.ref = e.target.value;
     const a = num(state.vals.A);
     if (a>0 && a<90){ state.vals.A = clean(90-a,2); document.getElementById('f_A').value = state.vals.A; }
@@ -650,11 +793,11 @@ function renderCalc(sh){
   document.getElementById('calcBtn').addEventListener('click', ()=>calculate());
   app.querySelectorAll('[data-j]').forEach(el=>el.addEventListener('input', ()=>{ state.job[el.dataset.j] = el.value; }));
   document.getElementById('clearJob').addEventListener('click', ()=>{
-    state.job = {ref:'', customer:'', company:'', preparedBy:'', notes:'', material:''}; state.recId = null;
+    state.job = {ref:'', customer:'', company:'', preparedBy:'', notes:'', material:''}; state.recId = null; state.fileName = '';
     app.querySelectorAll('[data-j]').forEach(el=>el.value=''); updateRecStatus(); toast('Started a new job — dimensions kept');
   });
-  document.getElementById('saveBtn').addEventListener('click', ()=>saveRecord(false));
-  document.getElementById('saveNewBtn').addEventListener('click', ()=>saveRecord(true));
+  document.getElementById('saveBtn').addEventListener('click', ()=>saveToFile(false));
+  document.getElementById('saveNewBtn').addEventListener('click', ()=>saveToFile(true));
   document.getElementById('reportBtn').addEventListener('click', ()=>{
     const r = computeResult();
     if (r.errs.length){ calculate(); return; }
@@ -667,11 +810,12 @@ function renderCalc(sh){
 
 /* Keep angle <-> height linked. The field the user typed last "drives" the other. */
 function sync(){
+  if (cur.flat) return;   // no angle / height link on flat-bottom shapes
   const v = state.vals, D = num(v.D), d = num(v.d), run = runOf(D,d);
   const ok = D>0 && d>=0 && run>0;
   if (state.drive==='angle'){
     const a = num(v.A), th = state.ref==='h' ? a : 90-a;
-    v.H = ok && a>0 && a<90 ? clean(run*Math.tan(rad(th)),4) : '';
+    v.H = ok && a>0 && a<90 ? clean(run*Math.tan(rad(th)),2) : '';
   } else {
     const H = num(v.H);
     if (ok && H>0){ const th = deg(Math.atan(H/run)); v.A = clean(state.ref==='h'?th:90-th,2); } else v.A = '';
@@ -683,13 +827,20 @@ function sync(){
 
 function geom(){
   const v = state.vals, r = cur.kind==='round';
+  if (cur.flat){
+    const D = num(v.D), S = num(v.S), W = r ? D : num(v.W), errs = [];
+    if (!(D>0)) errs.push(`Enter a ${r?'diameter':'length'} greater than 0.`);
+    if (!r && !(W>0)) errs.push('Enter a width greater than 0.');
+    if (!(S>0)) errs.push('Enter a height greater than 0.');
+    return {D, d:0, S, H:0, th:NaN, run:NaN, errs, W, w:0, rect:!r};
+  }
   const D = num(v.D), d = num(v.d), S = cur.wall ? num(v.S) : 0;
   const errs = [];
   if (!(D>0)) errs.push(`Enter a top ${r?'diameter':'width'} greater than 0.`);
   if (!(d>=0)) errs.push(`Enter an outlet ${r?'diameter':'width'} (0 or greater).`);
   if (D>0 && d>=D) errs.push(`The outlet must be smaller than the top ${r?'diameter':'width'}.`);
   if (cur.wall && !(S>=0)) errs.push('Enter a sidewall height (0 or greater).');
-  const rect = cur.kind==='square' && state.rect;
+  const rect = isRect(cur);
   let W = D, w = d;
   if (rect){
     W = num(v.W); w = num(v.w);
@@ -715,12 +866,18 @@ function geom(){
 function draw(){
   const g = geom();
   // fall back to sensible proportions for drawing while inputs are incomplete
-  let D = g.D>0 ? g.D : 10, d = (g.d>=0 && g.d<D) ? g.d : D*0.1;
-  let H = g.H>0 && Number.isFinite(g.H) ? g.H : runOf(D,d)*Math.tan(rad(60));
-  let S = cur.wall ? (g.S>=0 ? g.S : D*0.6) : 0;
-  const W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
-  const w = g.rect ? (g.w>=0 && g.w<=W ? g.w : W*0.1) : d;
-  const {svg,pos} = diagramSVG(cur,{D,d,H,S,W,w,rect:g.rect}, g);
+  let svg, pos;
+  if (cur.flat){
+    const D = g.D>0 ? g.D : 10, S = g.S>0 ? g.S : D*0.8, W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
+    ({svg,pos} = diagramSVG(cur,{D,d:0,H:0,S,W,w:0,rect:g.rect}, g));
+  } else {
+    let D = g.D>0 ? g.D : 10, d = (g.d>=0 && g.d<D) ? g.d : D*0.1;
+    let H = g.H>0 && Number.isFinite(g.H) ? g.H : runOf(D,d)*Math.tan(rad(60));
+    let S = cur.wall ? (g.S>=0 ? g.S : D*0.6) : 0;
+    const W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
+    const w = g.rect ? (g.w>=0 && g.w<=W ? g.w : W*0.1) : d;
+    ({svg,pos} = diagramSVG(cur,{D,d,H,S,W,w,rect:g.rect}, g));
+  }
   document.getElementById('svgHost').innerHTML = svg;
   document.querySelectorAll('.fld').forEach(f=>{
     const p = pos[f.dataset.k]; if (!p) return;
@@ -749,12 +906,12 @@ function diagramSVG(sh, g, exact, labels){
 
   // ---- body ----
   if (round){
-    o += `<path d="M${xL},${yS} L${oL},${yB} A${dw/2},${ory} 0 0 0 ${oR},${yB} L${xR},${yS} A${Dw/2},${ry} 0 0 1 ${xL},${yS} Z" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    if (!sh.flat) o += `<path d="M${xL},${yS} L${oL},${yB} A${dw/2},${ory} 0 0 0 ${oR},${yB} L${xR},${yS} A${Dw/2},${ry} 0 0 1 ${xL},${yS} Z" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
     if (sh.wall) o += `<path d="M${xL},${y0} L${xL},${yS} A${Dw/2},${ry} 0 0 0 ${xR},${yS} L${xR},${y0} Z" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
     o += `<ellipse cx="${cx}" cy="${y0}" rx="${Dw/2}" ry="${ry}" fill="url(#${u}i)" stroke="${lt(c,.35)}" stroke-width="2"/>`;
     if (dw>0) o += `<ellipse cx="${oc}" cy="${yB}" rx="${dw/2}" ry="${ory}" fill="${dk(c,.55)}"/>`;
   } else {
-    o += `<polygon points="${xL},${yS} ${oL},${yB} ${oR},${yB} ${xR},${yS}" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
+    if (!sh.flat) o += `<polygon points="${xL},${yS} ${oL},${yB} ${oR},${yB} ${xR},${yS}" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round"/>`;
     if (sh.wall) o += `<rect x="${xL}" y="${y0}" width="${Dw}" height="${hs}" fill="url(#${u}g)" stroke="${stroke}" stroke-width="1.6"/>`;
     o += `<line x1="${xL}" y1="${y0}" x2="${xR}" y2="${y0}" stroke="${dk(c,.45)}" stroke-width="3" stroke-linecap="round"/>`;
     if (dw>0) o += `<line x1="${oL}" y1="${yB}" x2="${oR}" y2="${yB}" stroke="${dk(c,.45)}" stroke-width="3" stroke-linecap="round"/>`;
@@ -778,6 +935,12 @@ function diagramSVG(sh, g, exact, labels){
   // top
   const yTd = y0 - ry - 40;
   o += hdim(xL,xR,yTd,y0,y0); pos.D = [cx,yTd]; o += tag(cx,yTd-8,sh_('D'));
+  if (sh.flat){   // flat bottom: just the height (and width for a box)
+    const xH = xR + 70;
+    o += vdim(xH, y0, yB, xR, xR);
+    pos.S = [xH,(y0+yB)/2]; o += tag(xH+10,(y0+yB)/2+5,sh_('S'),'start');
+    if (g.rect){ pos.W = [82, yTd]; o += tag(82, yTd+5, 'W ⊙'); }
+  } else {
   // outlet
   const yOd = yB + ory + 44;
   o += hdim(oL,oR,yOd,yB,yB); pos.d = [Math.min(Math.max(oc,80),560),yOd]; o += tag(oc,yOd+20,sh_('d'));
@@ -815,21 +978,22 @@ function diagramSVG(sh, g, exact, labels){
   const dist = R + (state.ref==='h' ? 62 : 40);
   pos.A = [Math.max(66, P[0]+b[0]*dist), Math.min(500, Math.max(60, P[1]+b[1]*dist))];
   o += tag(P[0]+b[0]*(R+16), P[1]+b[1]*(R+16)+5, 'θ');
+  }   // end of cone / hopper-only dimensions
 
   // plan view inset
-  const ix = 572, iy = 52, ir = 30, ratio = Math.max(0.08, g.d/g.D);
+  const ix = 572, iy = 52, ir = 30, ratio = sh.flat ? 0 : Math.max(0.08, g.d/g.D);
   o += `<g><rect x="${ix-44}" y="${iy-44}" width="88" height="96" rx="10" fill="#fff" stroke="#e3e8ef"/>
     <text x="${ix}" y="${iy+46}" text-anchor="middle" font-size="9.5" font-weight="700" letter-spacing="1.2" fill="${dimC}" font-family="Inter,system-ui,sans-serif">PLAN VIEW</text>`;
   if (round){
     const orr = ir*ratio, ocx = sh.asym ? ix+ir-orr : ix;
-    o += `<circle cx="${ix}" cy="${iy-4}" r="${ir}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/><circle cx="${ocx}" cy="${iy-4}" r="${orr}" fill="${dk(c,.45)}"/>`;
+    o += `<circle cx="${ix}" cy="${iy-4}" r="${ir}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/>${orr>0 ? `<circle cx="${ocx}" cy="${iy-4}" r="${orr}" fill="${dk(c,.45)}"/>` : ''}`;
   } else {
     // plan rectangle: length across, width (depth) up/down, scaled to fit the inset
     const k = ir / Math.max(g.D, g.W), hx = g.D*k, hy = g.W*k;
     const ox = Math.max(1.5, g.d*k), oy = Math.max(1.5, g.w*k), py = iy-4;
     const ln = (x1,y1,x2,y2) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="1" opacity=".6"/>`;
-    o += `<rect x="${ix-hx}" y="${py-hy}" width="${hx*2}" height="${hy*2}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/>
-      ${ln(ix-hx,py-hy,ix-ox,py-oy)}${ln(ix+hx,py-hy,ix+ox,py-oy)}${ln(ix-hx,py+hy,ix-ox,py+oy)}${ln(ix+hx,py+hy,ix+ox,py+oy)}
+    o += `<rect x="${ix-hx}" y="${py-hy}" width="${hx*2}" height="${hy*2}" fill="${lt(c,.75)}" stroke="${stroke}" stroke-width="1.5"/>`;
+    if (!sh.flat) o += `${ln(ix-hx,py-hy,ix-ox,py-oy)}${ln(ix+hx,py-hy,ix+ox,py-oy)}${ln(ix-hx,py+hy,ix-ox,py+oy)}${ln(ix+hx,py+hy,ix+ox,py+oy)}
       <rect x="${ix-ox}" y="${py-oy}" width="${ox*2}" height="${oy*2}" fill="${dk(c,.45)}"/>`;
     if (g.rect) o += `<text x="${ix}" y="${py-hy-4}" text-anchor="middle" font-size="9" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">L</text>
       <text x="${ix-hx-4}" y="${py+3}" text-anchor="end" font-size="9" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">W</text>`;
@@ -887,6 +1051,10 @@ function showResults(){
 
 function resultRows(r){
   const vu = VOL[state.outV], lu = LEN[state.unit].l, g = r.g, word = cur.kind==='round' ? 'Cone' : 'Hopper';
+  if (cur.flat){
+    const area = cur.kind==='round' ? Math.PI*g.D*g.D/4 : g.D*g.W;
+    return [['Height', `${fmt(g.S)} ${lu}`], ['Floor (footprint) area', `${fmt(area)} ${lu}²`]];
+  }
   const rows = [];
   if (cur.wall){
     rows.push([`${word} section volume`, `${fmt(r.Vc*vu.f)} ${vu.l}`]);
@@ -909,19 +1077,18 @@ function resultRows(r){
 }
 
 /* ================= Customer report ================= */
-function renderReport(){
+function reportArticle(){
   const r = computeResult();
-  if (r.errs.length){ curHash = null; go('#/calc/'+cur.id); return; }
-  state.keepCalc = true;   // results re-appear when going back to the calculator
+  if (r.errs.length) return null;
   const sh = cur, g = r.g, lu = LEN[state.unit].l, vu = VOL[state.outV], j = state.job;
-  const rect = sh.kind==='square' && state.rect, shapeName = rect ? sh.name.replace('Square','Rectangular') : sh.name;
+  const rect = isRect(sh), shapeName = shapeLabel(sh, rect);
   const root = document.documentElement.style;
   root.setProperty('--shape', sh.color); root.setProperty('--shape-dk', dk(sh.color,.22)); root.setProperty('--shape-tint', lt(sh.color,.9));
   const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   const den = num(state.density), hasW = den>=0 && state.density!=='';
   const kg = hasW ? r.V*den*DEN[state.denU].f : NaN;
   const angRef = state.ref==='h' ? 'from horizontal' : 'from vertical';
-  const autoK = state.drive==='angle' ? 'H' : 'A';
+  const autoK = sh.flat ? null : state.drive==='angle' ? 'H' : 'A';
   // dimension labels drawn onto the diagram
   const defs = fieldDefs(sh), labels = {};
   defs.forEach(f=>{ const v = state.vals[f.k]; labels[f.k] = f.unit==='deg' ? `${fmt(num(v))}°` : `${fmt(num(v))} ${lu}`; });
@@ -932,15 +1099,10 @@ function renderReport(){
   const altW = hasW ? ['lb','kg','ton','t'].filter(k=>k!==state.wtU).slice(0,2).map(k=>`${fmt(kg*WT[k].f)} ${WT[k].l}`).join(' · ') : '';
   const meta = [['Reference / Job #', j.ref], ['Date', today], ['Prepared by', j.preparedBy], ['Customer', j.customer], ['Company', j.company], ['Material', j.material]];
 
-  app.innerHTML = `
-  <div class="report-bar no-print">
-    <a class="back" href="#/calc/${sh.id}">← Back to calculator</a>
-    <button class="btn dark" id="printBtn">🖶 Print / Save as PDF</button>
-    ${state.recId ? '' : '<button class="btn ghost" id="rpSave">Save calculation</button>'}
-  </div>
+  return `
   <article class="report">
     <header class="rp-head">
-      <img class="lg-logo" alt="Legends Equipment">
+      <img class="lg-logo" src="${LEGENDS_LOGO}" alt="Legends Equipment">
       <div class="rp-title"><div class="eyebrow">Volume &amp; Weight Report</div><h1>${esc(j.ref) || shapeName}</h1></div>
     </header>
     <div class="rp-meta">${meta.map(([k,v])=>`<div><span>${k}</span>${esc(v) || '—'}</div>`).join('')}</div>
@@ -962,13 +1124,32 @@ function renderReport(){
           ${hasW ? `<tr><td>Material bulk density</td><td>${fmt(den)} ${DEN[state.denU].l}</td></tr><tr><td>Total weight when full</td><td>${fmt(kg*WT[state.wtU].f)} ${WT[state.wtU].l}</td></tr>` : ''}</table></div>
     </div>
     ${j.notes ? `<div class="rp-sec"><h3>Notes</h3><div class="rp-notes">${esc(j.notes)}</div></div>` : ''}
-    <footer class="rp-foot"><img class="lg-logo" alt="Legends Equipment">
+    <footer class="rp-foot"><img class="lg-logo" src="${LEGENDS_LOGO}" alt="Legends Equipment">
       <div>Prepared by <b>Legends Equipment</b>${j.preparedBy ? ' · ' + esc(j.preparedBy) : ''} · ${today}<br>
-      Theoretical inside volume based on the inside dimensions shown, at 100% level fill; outlet spout not included. Weight = volume × bulk density. Verify critical values before use.</div></footer>
+      Theoretical inside volume based on the inside dimensions shown, at 100% level fill${sh.flat ? '' : '; outlet spout not included'}. Weight = volume × bulk density. Verify critical values before use.</div></footer>
   </article>`;
+}
+
+function setShapeColors(sh){
+  const root = document.documentElement.style;
+  root.setProperty('--shape', sh.color); root.setProperty('--shape-dk', dk(sh.color,.22)); root.setProperty('--shape-tint', lt(sh.color,.9));
+}
+
+function renderReport(){
+  const article = reportArticle();
+  if (!article){ curHash = null; go('#/calc/'+cur.id); return; }
+  state.keepCalc = true;   // results re-appear when going back to the calculator
+  setShapeColors(cur);
+  app.innerHTML = `
+  <div class="report-bar no-print">
+    <a class="back" href="#/calc/${cur.id}">← Back to calculator</a>
+    <button class="btn dark" id="printBtn">🖶 Print / Save as PDF</button>
+    <button class="btn" id="rpSave">💾 Save</button>
+    <button class="btn ghost" id="rpSaveAs">Save As…</button>
+  </div>${article}`;
   document.getElementById('printBtn').addEventListener('click', ()=>window.print());
-  const rs = document.getElementById('rpSave');
-  if (rs) rs.addEventListener('click', ()=>{ saveRecord(false); rs.remove(); });
+  document.getElementById('rpSave').addEventListener('click', ()=>saveToFile(false));
+  document.getElementById('rpSaveAs').addEventListener('click', ()=>saveToFile(true));
 }
 
 function showWeight(){
