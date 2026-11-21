@@ -866,23 +866,23 @@ function geom(){
 function draw(){
   const g = geom();
   // fall back to sensible proportions for drawing while inputs are incomplete
-  let svg, pos;
+  let svg, pos, vh;
   if (cur.flat){
     const D = g.D>0 ? g.D : 10, S = g.S>0 ? g.S : D*0.8, W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
-    ({svg,pos} = diagramSVG(cur,{D,d:0,H:0,S,W,w:0,rect:g.rect}, g));
+    ({svg,pos,vh} = diagramSVG(cur,{D,d:0,H:0,S,W,w:0,rect:g.rect}, g));
   } else {
     let D = g.D>0 ? g.D : 10, d = (g.d>=0 && g.d<D) ? g.d : D*0.1;
     let H = g.H>0 && Number.isFinite(g.H) ? g.H : runOf(D,d)*Math.tan(rad(60));
     let S = cur.wall ? (g.S>=0 ? g.S : D*0.6) : 0;
     const W = g.rect ? (g.W>0 ? g.W : D*0.8) : D;
     const w = g.rect ? (g.w>=0 && g.w<=W ? g.w : W*0.1) : d;
-    ({svg,pos} = diagramSVG(cur,{D,d,H,S,W,w,rect:g.rect}, g));
+    ({svg,pos,vh} = diagramSVG(cur,{D,d,H,S,W,w,rect:g.rect}, g));
   }
   document.getElementById('svgHost').innerHTML = svg;
   document.querySelectorAll('.fld').forEach(f=>{
     const p = pos[f.dataset.k]; if (!p) return;
     f.style.setProperty('--x', (p[0]/640*100).toFixed(2));
-    f.style.setProperty('--y', (p[1]/560*100).toFixed(2));
+    f.style.setProperty('--y', (p[1]/vh*100).toFixed(2));
   });
 }
 
@@ -896,12 +896,13 @@ function diagramSVG(sh, g, exact, labels){
   const ry = round ? Math.min(13, Dw*0.07) : 0, ory = round ? Math.min(4, dw*0.12) : 0;
   const dimC = '#64748b';
   const pos = {};
-  let o = `<svg viewBox="0 0 640 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${sh.name} dimension diagram"><defs>
+  const VH = round ? 560 : 660;   // square shapes get a strip at the bottom for the isometric view
+  let o = `<svg viewBox="0 0 640 ${VH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${sh.name} dimension diagram"><defs>
     ${round ? cylGrad(u+'g', lt(c,.18)) : `<linearGradient id="${u}g" x1="0" x2="1"><stop offset="0" stop-color="${lt(c,.45)}"/><stop offset=".5" stop-color="${lt(c,.2)}"/><stop offset="1" stop-color="${c}"/></linearGradient>`}
     ${innerGrad(u+'i',c)}
     <marker id="${u}a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="${dimC}"/></marker>
     <pattern id="${u}p" width="22" height="22" patternUnits="userSpaceOnUse"><path d="M22 0H0V22" fill="none" stroke="#eef2f7" stroke-width="1"/></pattern></defs>
-    <rect width="640" height="560" rx="14" fill="url(#${u}p)"/>`;
+    <rect width="640" height="${VH}" rx="14" fill="url(#${u}p)"/>`;
   const stroke = dk(c,.3);
 
   // ---- body ----
@@ -999,6 +1000,52 @@ function diagramSVG(sh, g, exact, labels){
       <text x="${ix-hx-4}" y="${py+3}" text-anchor="end" font-size="9" font-weight="700" fill="${dimC}" font-family="Inter,system-ui,sans-serif">W</text>`;
   }
   o += `</g>`;
+
+  // isometric reference view (square / rectangular shapes) — bottom-left, opposite corner to the plan view
+  if (!round){
+    const A = g.D/2, B = g.W/2, a = sh.flat ? 0 : g.d/2, b = sh.flat ? 0 : g.w/2;
+    const zS = sh.flat ? 0 : g.H, zT = zS + (sh.wall ? g.S : 0);
+    const pr = (x,y,z) => [(x - y)*0.866, (x + y)*0.5 - z];               // true isometric projection
+    const corners = (hx,hy,z) => [[hx,hy],[hx,-hy],[-hx,-hy],[-hx,hy]].map(([x,y])=>pr(x,y,z));
+    const T = corners(A,B,zT), M = corners(A,B,zS), Bo = corners(a,b,0); // 0 = front corner, 1 = right, 2 = back, 3 = left
+    const all = [...T,...M,...Bo];
+    const xs = all.map(p=>p[0]), ys = all.map(p=>p[1]);
+    const mnx = Math.min(...xs), mxx = Math.max(...xs), mny = Math.min(...ys), mxy = Math.max(...ys);
+    const bx = 10, by = VH-132, bw = 156, bh = 124;                        // inset box
+    const k = Math.min((bw-36)/((mxx-mnx)||1), (bh-44)/((mxy-mny)||1));
+    const ccx = bx + bw/2, ccy = by + (bh-14)/2;
+    const m = p => [ccx + (p[0]-(mnx+mxx)/2)*k, ccy + (p[1]-(mny+mxy)/2)*k];
+    const t = T.map(m), mi = M.map(m), bo = Bo.map(m);
+    const P = arr => arr.map(p=>p.map(v=>v.toFixed(1)).join(',')).join(' ');
+    const id = u+'iso';
+    o += `<g><rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="10" fill="#fff" stroke="#e3e8ef"/>
+      <defs>
+        <linearGradient id="${id}l" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${lt(c,.4)}"/><stop offset="1" stop-color="${lt(c,.05)}"/></linearGradient>
+        <linearGradient id="${id}r" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${dk(c,.08)}"/><stop offset="1" stop-color="${dk(c,.38)}"/></linearGradient>
+        <clipPath id="${id}c"><polygon points="${P(t)}"/></clipPath>
+      </defs>`;
+    const edge = `stroke="${stroke}" stroke-width="1" stroke-linejoin="round"`;
+    // outside faces that face the viewer
+    if (!sh.flat) o += `<polygon points="${P([mi[3],mi[0],bo[0],bo[3]])}" fill="url(#${id}l)" ${edge}/><polygon points="${P([mi[0],mi[1],bo[1],bo[0]])}" fill="url(#${id}r)" ${edge}/>`;
+    if (sh.wall && zT > zS) o += `<polygon points="${P([t[3],t[0],mi[0],mi[3]])}" fill="url(#${id}l)" ${edge}/><polygon points="${P([t[0],t[1],mi[1],mi[0]])}" fill="url(#${id}r)" ${edge}/>`;
+    // looking down into the open top: back inside walls + outlet, clipped to the opening
+    const inEdge = `stroke="${dk(c,.75)}" stroke-width=".8" stroke-linejoin="round"`;
+    const wallR = sh.flat ? [t[1],t[2],mi[2],mi[1]] : [t[1],t[2],mi[2],bo[2],bo[1],mi[1]];
+    const wallL = sh.flat ? [t[2],t[3],mi[3],mi[2]] : [t[2],t[3],mi[3],bo[3],bo[2],mi[2]];
+    o += `<polygon points="${P(t)}" fill="${dk(c,.78)}"/><g clip-path="url(#${id}c)">
+      ${sh.flat ? `<polygon points="${P(mi)}" fill="${dk(c,.72)}"/>` : ''}
+      <polygon points="${P(wallR)}" fill="${dk(c,.66)}" ${inEdge}/>
+      <polygon points="${P(wallL)}" fill="${dk(c,.52)}" ${inEdge}/>
+      ${sh.flat ? '' : `<polygon points="${P(bo)}" fill="#0b1220"/>`}</g>`;
+    o += `<polygon points="${P(t)}" fill="none" stroke="${lt(c,.55)}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    if (sh.wall && zT > zS && !sh.flat) o += `<polyline points="${P([mi[3],mi[0],mi[1]])}" fill="none" stroke="${stroke}" stroke-width="1" opacity=".7"/>`;
+    // L / W edge tags + caption
+    const mid = (p,q,dx,dy) => [(p[0]+q[0])/2+dx, (p[1]+q[1])/2+dy];
+    const tl = mid(t[3],t[0],-7,9), tw = mid(t[0],t[1],7,9);
+    o += `<g font-family="Inter,system-ui,sans-serif" font-weight="700" fill="${dimC}">
+      <g font-size="10" stroke="#fff" stroke-width="3" paint-order="stroke" fill="#0f172a"><text x="${tl[0]}" y="${tl[1]}" text-anchor="end">L</text><text x="${tw[0]}" y="${tw[1]}">W</text></g>
+      <text x="${bx+bw/2}" y="${by+bh-8}" font-size="9.5" letter-spacing="1.2" text-anchor="middle">ISOMETRIC VIEW</text></g></g>`;
+  }
   // value callouts (used by the printed report instead of input boxes)
   if (labels){
     const defsL = fieldDefs(sh);
@@ -1013,7 +1060,7 @@ function diagramSVG(sh, g, exact, labels){
     });
   }
   o += `</svg>`;
-  return {svg:o, pos};
+  return {svg:o, pos, vh:VH};
 }
 
 /* ================= Calculation & output ================= */
